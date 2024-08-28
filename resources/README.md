@@ -15,3 +15,4 @@
 1. construct own heuristic (with literature help)
 1. Compare/Generate results and send supervisor an email
 2. Work on data generation (random and company)
+1. Generate problem specific instance (with real world values from company data)
