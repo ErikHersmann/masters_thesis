@@ -37,7 +37,7 @@ if __name__ == "__main__":
         output.append(
             {
                 "skill_required": random.randint(0, len(config_dict["skills"]) - 1),
-                "skill_level_required": random.randint(0, 50),
+                "skill_level_required": random.randint(5, 50),
                 "base_duration": random.randint(5, 25),
                 "deadline": random.randint(20, 100),
                 "index": idx,

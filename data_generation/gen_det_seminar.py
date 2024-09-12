@@ -1,4 +1,5 @@
-from gen_random_data import get_config_dict
+from data_generation.gen_ran_jobs import get_config_dict
+import json
 
 
 if __name__ == "__main__":
