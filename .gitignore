@@ -1,2 +1,3 @@
 resources
 data_generation/output
+data_generation/__pycache__
