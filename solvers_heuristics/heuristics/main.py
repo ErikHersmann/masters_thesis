@@ -7,7 +7,9 @@ with open("../../resources/config.json", "r") as f:
 
 number_of_machines = 3
 machines_array = [[] for _ in range(number_of_machines)]
-Skills = IntEnum('Skills', ['C_Plus_Plus', 'C_Sharp', 'Python', 'Ruby', 'Office', 'Communication'])
+
+
+
 
 # this should come from a file or generator function and contain tuples like this
 # single_job = {'skill_required': Skills.C_Sharp,
