@@ -5,7 +5,7 @@ with open("../../resources/config.json", "r") as f:
     config_dict = json.load(f)
 
 
-number_of_machines = 3
+number_of_machines = config_dict["number_of_machines"]
 # must be a list of dicts
 machine_qualifications = []
 job_order_on_machines = [[] for _ in range(number_of_machines)]
