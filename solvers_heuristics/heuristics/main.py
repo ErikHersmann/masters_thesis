@@ -20,8 +20,9 @@ machines_array = [[] for _ in range(number_of_machines)]
 #               'name': "performance benchmarking",
 #              }
 jobs = []
-with open('../../data_generation/outputs/jobset_1.json', 'r') as f:
+with open('../../data_generation/output/jobset_0.json', 'r') as f:
     jobs_dict = json.load(f)
+print(jobs_dict[0])
 # add this urself
 seminars = []
 

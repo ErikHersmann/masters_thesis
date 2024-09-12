@@ -7,6 +7,7 @@ import random, json
 with open("../resources/config.json", "r") as f:
     config_dict = json.load(f)
 
+
 def write_output_without_overwrite(data):
     appendix = 0
     fname_base = "output/jobset_"
@@ -28,22 +29,21 @@ except:
     NUM_JOBS = 3
 
 
+first_letter = ord("a")
+last_letter = ord("z")
 for idx in range(NUM_JOBS):
     output.append(
         {
-            "skill_required": random.randint(0, len(config_dict['skills'])-1),
+            "skill_required": random.randint(0, len(config_dict["skills"]) - 1),
             "skill_level_required": random.randint(0, 50),
             "base_duration": random.randint(5, 25),
             "deadline": random.randint(20, 100),
             "index": idx,
             "name": "".join(
-                [
-                    chr(i)
-                    for i in [random.randint(ord("a"), ord("z")) for _ in range(10)]
-                ]
+                [chr(random.randint(first_letter, last_letter)) for _ in range(10)]
             ),
         }
     )
-    
-    
+
+
 write_output_without_overwrite(output)
