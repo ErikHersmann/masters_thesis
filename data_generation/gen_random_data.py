@@ -1,13 +1,5 @@
 import os.path
 
-
-
-
-
-
-
-
-
 def write_output_without_overwrite(data: str):
     appendix = 0
     fname_base = "output/jobset_"
@@ -24,4 +16,3 @@ def write_output_without_overwrite(data: str):
 
 
 
-write_output_without_overwrite("test1")
