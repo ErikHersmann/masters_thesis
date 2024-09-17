@@ -1,7 +1,7 @@
 # Notes
 ## Notes from first meeting
 - How is a solution being encoded (Vector of jobs for each machine (the order))
-	- Issues with that: Calculate objective function value from a "solution is non-trivial"
+	- Issues with that: Calculate objective function value from a solution is "non-trivial"
 - Linearize model: use the binary decision variable with the following 5 indices: (job, )machine, time, competence-index, competence-level (to solve via a MIP model)
 - Get an upper bound from heuristics or construct one from a feasible solution for T and competence-levels
 - Reasoning for generation of data from company data or random sampling (based on company data)
