@@ -2,7 +2,6 @@ import json
 from math import ceil
 
 
-
 def dprint(dictionary_list, name):
     """Helper function to pretty print the list of dictionaries
 
@@ -42,7 +41,7 @@ def calculate_lateness(job_order_on_machines):
 
 
 def greedy_job_assignment(
-    all_current_machine_processing_times, jobs, job_order_on_machines, current_time
+    all_current_machine_processing_times, jobs, job_order_on_machines, current_time, learning_curves, machine_qualifications
 ):
     print(f"current machine processing time {all_current_machine_processing_times}\n")
     machines_used_in_this_iteration = []
@@ -141,6 +140,15 @@ with open("../../data_generation/output/seminarset_basic_0.json", "r") as f:
     seminars = json.load(f)
 with open("../../data_generation/output/machineset_0.json", "r") as f:
     machine_qualifications = json.load(f)
+with open("../../data_generation/output/learning_curveset_0.json") as f:
+    learning_curves = json.load(f)
+    learning_curves = [
+        lambda skill_level, processing_time: int(
+            skill_level * (machine["growth_factor"] ** processing_time)
+        )
+        + machine["growth_const"]
+        for machine in learning_curves
+    ]
 
 
 dprint(jobs, "Jobs")
@@ -168,7 +176,7 @@ while len(jobs) > 0:
 
     # Greedily pick the earliest deadline jobs and the fastest worker on them ?
     greedy_job_assignment(
-        all_current_machine_processing_times, jobs, job_order_on_machines, current_time
+        all_current_machine_processing_times, jobs, job_order_on_machines, current_time, learning_curves
     )
 
     dprint(job_order_on_machines, "Order")
