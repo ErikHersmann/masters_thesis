@@ -1,6 +1,10 @@
 import json
 from math import ceil
 
+####################################
+# TRANSFORM THIS INTO A CLASS MAYBE#
+####################################
+
 
 def dprint(dictionary_list, name):
     """Helper function to pretty print the list of dictionaries
@@ -41,7 +45,12 @@ def calculate_lateness(job_order_on_machines):
 
 
 def greedy_job_assignment(
-    all_current_machine_processing_times, jobs, job_order_on_machines, current_time, learning_curves, machine_qualifications
+    all_current_machine_processing_times,
+    jobs,
+    job_order_on_machines,
+    current_time,
+    learning_curves,
+    machine_qualifications,
 ):
     print(f"current machine processing time {all_current_machine_processing_times}\n")
     machines_used_in_this_iteration = []
@@ -71,6 +80,23 @@ def greedy_job_assignment(
                 if processing_time[0] == best_machine_idx
             ][0][1][job_index]
         )
+        ####################
+        # update the skills#
+        ####################
+        skill_idx = job["skill_required"]
+        current_skill_level = machine_qualifications[best_machine_idx]["skills"][
+            skill_idx
+        ]
+        # processing_duration = (
+        #     job_order_on_machines[best_machine_idx][-1]["end_time"]
+        #     - job_order_on_machines[best_machine_idx][-1]["start_time"]
+        # )
+
+        machine_qualifications[best_machine_idx]["skills"][skill_idx] = learning_curves[
+            best_machine_idx
+        ](
+            current_skill_level
+        )  # , processing_duration
 
         jobs.remove(job)
         machines_used_in_this_iteration.append(best_machine_idx)
@@ -143,9 +169,7 @@ with open("../../data_generation/output/machineset_0.json", "r") as f:
 with open("../../data_generation/output/learning_curveset_0.json") as f:
     learning_curves = json.load(f)
     learning_curves = [
-        lambda skill_level, processing_time: int(
-            skill_level * (machine["growth_factor"] ** processing_time)
-        )
+        lambda skill_level: int(skill_level * machine["growth_factor"])
         + machine["growth_const"]
         for machine in learning_curves
     ]
@@ -162,10 +186,17 @@ dprint(machine_qualifications, "Machines")
 
 current_time = 0
 while len(jobs) > 0:
+    print(f"t\t{current_time}")
+    dprint(machine_qualifications, "Qualifications")
     # Calculate times list for all jobs for all free machines
     all_current_machine_processing_times = get_current_machine_processing_times(
         job_order_on_machines, jobs, current_time
     )
+    
+    # maybe instead consider for each singular job which an employee would get due to the priority ranking if a seminar at the start would reduce the end_time just for that job and if so:
+    # plan a seminar
+    
+    
     # Calculate the lateness of the jobs in the next step
     pre_seminar_lateness = calculate_lateness_next_step()
     # Recalculate with seminars
@@ -176,7 +207,12 @@ while len(jobs) > 0:
 
     # Greedily pick the earliest deadline jobs and the fastest worker on them ?
     greedy_job_assignment(
-        all_current_machine_processing_times, jobs, job_order_on_machines, current_time, learning_curves
+        all_current_machine_processing_times,
+        jobs,
+        job_order_on_machines,
+        current_time,
+        learning_curves,
+        machine_qualifications,
     )
 
     dprint(job_order_on_machines, "Order")

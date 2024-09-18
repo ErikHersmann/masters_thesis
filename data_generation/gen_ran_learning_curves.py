@@ -7,6 +7,7 @@ with open("../resources/config.json", "r") as f:
 
 if __name__ == "__main__":
     machines = []
+    max_growth = config_dict["learning_curves_config"]["maximum_growth"]
     for idx in range(config_dict["number_of_machines"]):
         machines.append(
         #     lambda skill_level, processing_time: int(
@@ -15,7 +16,7 @@ if __name__ == "__main__":
         #     + randint(0, 2)
         # )
         {
-            "growth_factor" : 1 + (randint(1,15)/100),
+            "growth_factor" : 1 + (randint(1,max_growth)/100),
             "growth_const" : randint(0,2)
         }
         )
