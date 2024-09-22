@@ -8,11 +8,10 @@
 - don't use stochastic functions as learning effect functions (put that in the "directions for future research" part)
 - use a greedy heuristic and improve upon that via neighborhood-search (should have been done already in the literature for similar problems)
 
-## To do 
-1. Grab the WLS license for gurobi on laptop (copy the file or something ?)
-1. linearize problem  
-	1. MIP Solver (Gurobi)
-1. construct own heuristic (with literature help)
-1. Compare/Generate results and send supervisor an email
-2. Work on data generation (random and company)
-1. Generate problem specific instance (with real world values from company data)
+## Answers regarding the first meeting
+- Vector of (Job-Index, End-Time) Tuples for each machine (This allows for easy calculation of lateness)
+- Linearization in progress
+- Upper bound from heuristic (or consider no learning effect, no seminars and somehow calculate lateness from that cheaply)
+- Data generation completely random for now (reason this later)
+- Done
+- Open (heuristic from literature)
