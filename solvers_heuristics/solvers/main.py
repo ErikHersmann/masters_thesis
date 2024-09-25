@@ -86,6 +86,20 @@ class linear_solver:
         # CONSTRAINTS#
         ##############
         
+        # Machines must have at most one job on them for any given time t
+        
+        # Each job has to be completed, except for seminars which can be completed
+        
+        # Calculate processing durations
+        
+        # Set y variables
+        
+        # Learning curve helper function
+        
+        # Skill level increase only constraint
+        
+        # Always skill level greater than zero
+        
 
     def solve(self):
         pass
