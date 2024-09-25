@@ -20,6 +20,12 @@ class linear_solver:
         self.SKILL_LEVEL_UB = self.config_dict["skill_config"]["max_machine_skill"]
         self.SKILLS = self.config_dict["skills"]
         self.N_SKILLS = len(self.SKILLS)
+        self.jobs = []
+
+    def setup(self):
+        self.jobs = []
+        self.machines = []
+        pass
 
     def compile(self):
         self.model = LpProblem("Open_Shop", LpMinimize)
@@ -27,7 +33,7 @@ class linear_solver:
         ############
         # VARIABLES#
         ############
-        start_times = LpVariable.dicts(
+        start_times_binary = LpVariable.dicts(
             "x",
             [
                 (machine, job, time)
@@ -37,7 +43,7 @@ class linear_solver:
             ],
             cat="Binary",
         )
-        skill_level = LpVariable.dicts(
+        skill_level_binary = LpVariable.dicts(
             "y",
             [
                 (machine, time, level, skill)
@@ -48,6 +54,38 @@ class linear_solver:
             ],
             cat="Binary",
         )
+        processing_times = LpVariable.dicts(
+            "d",
+            [
+                (machine, job, time)
+                for machine in range(self.N_MACHINES)
+                for job in range(self.N_JOBS)
+                for time in range(self.N_TIME)
+            ],
+            cat="Integer",
+        )
+        #####################
+        # OBJECTIVE FUNCTION#
+        #####################
+        lateness = LpVariable("lateness", lowBound=0, cat="Integer")
+        for job in range(self.N_JOBS):
+            for machine in range(self.N_MACHINES):
+                # sum this over t
+                time_over_deadline = sum(
+                    [
+                        time * start_times_binary[(machine, job, time)]
+                        + processing_times[(machine, job, time)]
+                        - self.jobs[job]["deadline"]
+                        for time in range(self.N_TIME)
+                    ]
+                )
+                model += lateness >= time_over_deadline
+        model += lateness
+        
+        ##############
+        # CONSTRAINTS#
+        ##############
+        
 
     def solve(self):
         pass
