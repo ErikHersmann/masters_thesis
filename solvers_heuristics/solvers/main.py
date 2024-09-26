@@ -21,6 +21,7 @@ class linear_solver:
         self.SKILLS = self.config_dict["skills"]
         self.N_SKILLS = len(self.SKILLS)
         self.jobs = []
+        self.BIG_M = sum([job["base_duration"] for job in self.jobs])
 
     def setup(self):
         self.jobs = []
@@ -64,6 +65,15 @@ class linear_solver:
             ],
             cat="Integer",
         )
+        machine_one_job_constraint_helper_binary = LpVariable.dicts(
+            "a",
+            [
+                (job1, job2, machine)
+                for job1 in range(self.N_JOBS)
+                for job2 in range(self.N_JOBS)
+                for machine in range(self.N_MACHINES)
+            ],
+        )
         #####################
         # OBJECTIVE FUNCTION#
         #####################
@@ -81,25 +91,78 @@ class linear_solver:
                 )
                 model += lateness >= time_over_deadline
         model += lateness
-        
+
         ##############
         # CONSTRAINTS#
         ##############
-        
+
         # Machines must have at most one job on them for any given time t
-        
+
+        for job1 in range(self.N_JOBS):
+            for job2 in range(job1, self.N_JOBS):
+                for machine in range(self.N_MACHINES):
+                    left_side = sum(
+                        [
+                            start_times_binary[(machine, job1, time)]
+                            * (time + processing_times[(machine, job1, time)])
+                            for time in range(self.N_TIME)
+                        ]
+                    )
+                    right_side = sum(
+                        [
+                            start_times_binary[(machine, job2, time)] * time
+                            for time in range(self.N_TIME)
+                        ]
+                    )
+                    model += (
+                        left_side
+                        - self.BIG_M
+                        * (
+                            1
+                            - machine_one_job_constraint_helper_binary[
+                                (job1, job2, machine)
+                            ]
+                        )
+                        <= right_side
+                    )
+                    # XOR
+
+                    left_side_alt = sum(
+                        [
+                            start_times_binary[(machine, job2, time)]
+                            * (time + processing_times[(machine, job2, time)])
+                            for time in range(self.N_TIME)
+                        ]
+                    )
+                    right_side_alt = sum(
+                        [
+                            start_times_binary[(machine, job1, time)] * time
+                            for time in range(self.N_TIME)
+                        ]
+                    )
+
+                    model += (
+                        left_side_alt
+                        - self.BIG_M
+                        * machine_one_job_constraint_helper_binary[
+                            (job1, job2, machine)
+                        ]
+                        <= right_side_alt
+                    )
+
         # Each job has to be completed, except for seminars which can be completed
         
+        
+
         # Calculate processing durations
-        
+
         # Set y variables
-        
+
         # Learning curve helper function
-        
+
         # Skill level increase only constraint
-        
+
         # Always skill level greater than zero
-        
 
     def solve(self):
         pass
