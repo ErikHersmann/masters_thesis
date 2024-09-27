@@ -27,26 +27,24 @@ class linear_solver:
 
         Returns:
             Range: The above described range
-        """        
+        """
         return range(self.SKILL_LEVEL_LB, self.SKILL_LEVEL_UB + 1)
 
     def setup(self):
-        """Sets up jobs, seminars, qualifications, parameters by reading from "../../data_generation" directory
-        """        
+        """Sets up jobs, seminars, qualifications, parameters by reading from "../../data_generation" directory"""
         self.jobs = []
         self.seminars = []
         self.qualifications = []
         pass
 
-    def solve(self):
-        """Instantiates model and solves it
-        """        
+    def compile(self):
+        """Instantiates model"""
         self.model = LpProblem("Open_Shop", LpMinimize)
 
         ############
         # VARIABLES#
         ############
-        start_times_binary = LpVariable.dicts(
+        self.start_times_binary = LpVariable.dicts(
             "x",
             [
                 (machine, job, time)
@@ -56,7 +54,7 @@ class linear_solver:
             ],
             cat="Binary",
         )
-        skill_level_binary = LpVariable.dicts(
+        self.skill_level_binary = LpVariable.dicts(
             "y",
             [
                 (machine, time, level, skill)
@@ -70,7 +68,7 @@ class linear_solver:
             cat="Binary",
         )
         # Not sure if this is a decision variable
-        processing_times = LpVariable.dicts(
+        self.processing_times = LpVariable.dicts(
             "d",
             [
                 (machine, job, time)
@@ -80,7 +78,7 @@ class linear_solver:
             ],
             cat="Integer",
         )
-        machine_one_job_constraint_helper_binary = LpVariable.dicts(
+        self.machine_one_job_constraint_helper_binary = LpVariable.dicts(
             "a",
             [
                 (job1, job2, machine)
@@ -92,20 +90,20 @@ class linear_solver:
         #####################
         # OBJECTIVE FUNCTION#
         #####################
-        lateness = LpVariable("lateness", lowBound=0, cat="Integer")
+        self.lateness = LpVariable("lateness", lowBound=0, cat="Integer")
         for job in range(self.N_JOBS):
             for machine in range(self.N_MACHINES):
                 # sum this over t
                 time_over_deadline = sum(
                     [
-                        time * start_times_binary[(machine, job, time)]
-                        + processing_times[(machine, job, time)]
+                        time * self.start_times_binary[(machine, job, time)]
+                        + self.processing_times[(machine, job, time)]
                         - self.jobs[job]["deadline"]
                         for time in range(self.N_TIME)
                     ]
                 )
-                self.model += lateness >= time_over_deadline
-        self.model += lateness
+                self.model += self.lateness >= time_over_deadline
+        self.model += self.lateness
 
         ##############
         # CONSTRAINTS#
@@ -118,14 +116,14 @@ class linear_solver:
                 for machine in range(self.N_MACHINES):
                     left_side = sum(
                         [
-                            start_times_binary[(machine, job1, time)]
-                            * (time + processing_times[(machine, job1, time)])
+                            self.start_times_binary[(machine, job1, time)]
+                            * (time + self.processing_times[(machine, job1, time)])
                             for time in range(self.N_TIME)
                         ]
                     )
                     right_side = sum(
                         [
-                            start_times_binary[(machine, job2, time)] * time
+                            self.start_times_binary[(machine, job2, time)] * time
                             for time in range(self.N_TIME)
                         ]
                     )
@@ -134,7 +132,7 @@ class linear_solver:
                         - self.BIG_M
                         * (
                             1
-                            - machine_one_job_constraint_helper_binary[
+                            - self.machine_one_job_constraint_helper_binary[
                                 (job1, job2, machine)
                             ]
                         )
@@ -144,14 +142,14 @@ class linear_solver:
 
                     left_side_alt = sum(
                         [
-                            start_times_binary[(machine, job2, time)]
-                            * (time + processing_times[(machine, job2, time)])
+                            self.start_times_binary[(machine, job2, time)]
+                            * (time + self.processing_times[(machine, job2, time)])
                             for time in range(self.N_TIME)
                         ]
                     )
                     right_side_alt = sum(
                         [
-                            start_times_binary[(machine, job1, time)] * time
+                            self.start_times_binary[(machine, job1, time)] * time
                             for time in range(self.N_TIME)
                         ]
                     )
@@ -159,7 +157,7 @@ class linear_solver:
                     self.model += (
                         left_side_alt
                         - self.BIG_M
-                        * machine_one_job_constraint_helper_binary[
+                        * self.machine_one_job_constraint_helper_binary[
                             (job1, job2, machine)
                         ]
                         <= right_side_alt
@@ -171,7 +169,7 @@ class linear_solver:
             self.model += (
                 sum(
                     [
-                        start_times_binary[(machine, job, time)]
+                        self.start_times_binary[(machine, job, time)]
                         for machine in range(self.N_MACHINES)
                         for time in range(self.N_TIME)
                     ]
@@ -185,7 +183,7 @@ class linear_solver:
                 self.model += (
                     sum(
                         [
-                            start_times_binary[(machine, seminar, time)]
+                            self.start_times_binary[(machine, seminar, time)]
                             for time in range(self.N_TIME)
                         ]
                     )
@@ -198,11 +196,15 @@ class linear_solver:
             current_job = self.jobs[job_index]
             for machine in range(self.N_MACHINES):
                 for time in range(self.N_TIME):
-                    self.model += processing_times[(machine, job_index, time)] == sum(
+                    self.model += self.processing_times[
+                        (machine, job_index, time)
+                    ] == sum(
                         [
                             sum(
                                 [
-                                    skill_level_binary[(machine, time, level, skill)]
+                                    self.skill_level_binary[
+                                        (machine, time, level, skill)
+                                    ]
                                     * (
                                         (
                                             current_job["skill_level_required"]
@@ -224,11 +226,14 @@ class linear_solver:
                 for skill in range(self.N_SKILLS):
                     for time in range(self.N_TIME):
                         self.model += (
-                            skill_level_binary[
+                            self.skill_level_binary[
                                 (
                                     machine,
                                     time + 1,
-                                    min(learning_curve_function(machine, time, skill), self.SKILL_LEVEL_UB),
+                                    min(
+                                        learning_curve_function(machine, time, skill),
+                                        self.SKILL_LEVEL_UB,
+                                    ),
                                     skill,
                                 )
                             ]
@@ -240,14 +245,14 @@ class linear_solver:
         def learning_curve_function(machine, time, skill):
             left_side = sum(
                 [
-                    start_times_binary[(machine, job_index, time)]
+                    self.start_times_binary[(machine, job_index, time)]
                     * (
                         self.qualifications[machine]["beta"]
                         + self.qualifications[machine]["alpha"]
                         * sum(
                             [
                                 level
-                                * skill_level_binary[
+                                * self.skill_level_binary[
                                     (
                                         machine,
                                         time,
@@ -264,7 +269,7 @@ class linear_solver:
             )
             right_side = sum(
                 [
-                    level * skill_level_binary[(machine, time, level, skill)]
+                    level * self.skill_level_binary[(machine, time, level, skill)]
                     for level in self.skill_range()
                 ]
             )
@@ -277,14 +282,15 @@ class linear_solver:
                 for skill in range(self.N_SKILLS):
                     left_side = sum(
                         [
-                            level * skill_level_binary[(machine, time, level, skill)]
+                            level
+                            * self.skill_level_binary[(machine, time, level, skill)]
                             for level in self.skill_range()
                         ]
                     )
                     right_side = sum(
                         [
                             level
-                            * skill_level_binary[(machine, time - 1, level, skill)]
+                            * self.skill_level_binary[(machine, time - 1, level, skill)]
                             for level in self.skill_range()
                         ]
                     )
@@ -297,13 +303,15 @@ class linear_solver:
                 self.model += (
                     sum(
                         [
-                            skill_level_binary[(machine, 0, level, skill)]
+                            self.skill_level_binary[(machine, 0, level, skill)]
                             for level in self.skill_range()
                         ]
                     )
                     == 1
                 )
 
+    def solve(self):
+        """Solves the model with GUROBI"""
         ######################
         # SOLVING WITH GUROBI#
         ######################
@@ -316,7 +324,7 @@ class linear_solver:
                 displayInterval=5,
             )
         )
-        self.lateness = lateness.varValue
+        self.lateness = self.lateness.varValue
 
         #############################
         # EXTRACTING VARIABLE VALUES#
@@ -325,20 +333,20 @@ class linear_solver:
         results = {}
 
         results["start_times_binary"] = [
-            index for index, var in start_times_binary.items() if var.value() == 1
+            index for index, var in self.start_times_binary.items() if var.value() == 1
         ]
 
         results["skill_level_binary"] = [
-            index for index, var in skill_level_binary.items() if var.value() == 1
+            index for index, var in self.skill_level_binary.items() if var.value() == 1
         ]
 
         results["processing_times"] = {
-            str(index): var.value() for index, var in processing_times.items()
+            str(index): var.value() for index, var in self.processing_times.items()
         }
 
         results["machine_one_job_constraint_helper_binary"] = [
             index
-            for index, var in machine_one_job_constraint_helper_binary.items()
+            for index, var in self.machine_one_job_constraint_helper_binary.items()
             if var.value() == 1
         ]
 
@@ -346,8 +354,8 @@ class linear_solver:
             json.dump(results, f, indent=4)
 
 
-
 if __name__ == "__main__":
     solver = linear_solver(verbose=True)
     solver.setup()
-    #solver.solve()
+    # solver.compile()
+    # solver.solve()
