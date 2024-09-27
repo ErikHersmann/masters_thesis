@@ -1,3 +1,5 @@
 resources
 data_generation/output
 data_generation/__pycache__
+solvers_heuristics/heuristics/results
+solvers_heuristics/solvers/results
