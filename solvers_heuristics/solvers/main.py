@@ -389,7 +389,7 @@ class linear_solver:
         for machine in range(self.N_MACHINES):
             for job in range(self.N_JOBS):
                 for skill in range(self.N_SKILLS):
-                    for time in range(self.N_TIME-1):
+                    for time in range(self.N_TIME - 1):
                         self.model += (
                             sum(
                                 [
