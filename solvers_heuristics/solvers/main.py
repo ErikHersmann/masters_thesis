@@ -25,6 +25,7 @@ class linear_solver:
         self.lateness = None
         self.BIG_M = None
         self.N_SEMINARS = None
+        self.PROCESSING_TIMES_UB = 100
 
     def skill_range(self):
         """Generate an inclusive range from the lower bound of the skill level up to the upper bound (inclusive)
@@ -65,7 +66,7 @@ class linear_solver:
 
     def compile(self):
         """Instantiates model"""
-        self.model = LpProblem("Open_Shop", LpMinimize)
+        self.model = LpProblem("Human_Resource_Scheduling", LpMinimize)
 
         ############
         # VARIABLES#
@@ -99,6 +100,8 @@ class linear_solver:
                 for skill in range(self.N_SKILLS)
             ],
             cat="Integer",
+            lowBound=self.SKILL_LEVEL_LB,
+            upBound=self.SKILL_LEVEL_UB
         )
         self.processing_times_integer = LpVariable.dicts(
             "d",
@@ -109,6 +112,8 @@ class linear_solver:
                 for time in range(self.N_TIME)
             ],
             cat="Integer",
+            lowBound=1,
+            upBound=self.PROCESSING_TIMES_UB
         )
         self.skill_increased_helper_binary = LpVariable.dicts(
             "q",
@@ -247,7 +252,9 @@ class linear_solver:
         # Machines must have at most one job on them for any given time t (Currently the implementation for chapter 3.1.2 -> Update to 3.1.3)
 
         for job1 in range(self.N_JOBS):
-            for job2 in range(job1, self.N_JOBS):
+            for job2 in range(self.N_JOBS):
+                if job1 == job2:
+                    continue
                 for machine in range(self.N_MACHINES):
                     left_side = sum(
                         [
@@ -523,6 +530,8 @@ class linear_solver:
 
         with open(self.RESULTS_DIR + "variable_values_debug.json", "w") as f:
             json.dump(results, f, indent=4)
+            
+        self.model.writeLP(self.RESULTS_DIR + "model.lp")
 
 
 if __name__ == "__main__":
