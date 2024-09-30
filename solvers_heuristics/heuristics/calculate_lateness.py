@@ -10,5 +10,10 @@ def calculate_lateness(order_on_machines: list, jobs_seminars: list, machines: l
     Returns:
         int: The lateness of the given solution
     """
-    machine_downtimes = [0 for _ in range(len(machines))]
+    machine_countdowns = [0 for _ in range(len(machines))]
+    current_time = 0
+    for machine_idx, countdown in enumerate(machine_countdowns):
+        if countdown > 0:
+            continue
+        
     return 0
