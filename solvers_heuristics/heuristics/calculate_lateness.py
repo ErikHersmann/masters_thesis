@@ -15,5 +15,8 @@ def calculate_lateness(order_on_machines: list, jobs_seminars: list, machines: l
     for machine_idx, countdown in enumerate(machine_countdowns):
         if countdown > 0:
             continue
-        
+        current_job = order_on_machines[machine_idx].pop(0)
+        # Calculate the processing duration here
+        current_processing_duration = 0
+        machine_countdowns[machine_idx] = current_processing_duration
     return 0
