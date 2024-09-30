@@ -11,9 +11,7 @@ class heuristic_1:
         with open("../../resources/config.json", "r") as f:
             self.config_dict = json.load(f)
 
-        self.number_of_machines = self.config_dict["number_of_machines"]
         # must be a list of dicts
-        self.job_order_on_machines = [[] for _ in range(self.number_of_machines)]
 
         # this should come from a file or generator function and contain tuples like this
         # single_job = {'skill_required': Skills.C_Sharp,
@@ -37,6 +35,8 @@ class heuristic_1:
                 + machine["growth_const"]
                 for machine in learning_curves
             ]
+        self.number_of_machines = len(self.machine_qualifications)
+        self.job_order_on_machines = [[] for _ in range(self.number_of_machines)]
 
         if self.verbose:
             self.dprint(self.jobs, "Jobs")
@@ -211,8 +211,11 @@ class heuristic_1:
         ##########
 
         print(self.calculate_lateness())
-
+    def write_result(self, path):
+        with open(path, "w") as f:
+            json.dump(self.job_order_on_machines, f)
 
 if __name__ == "__main__":
     heuristic = heuristic_1(True)
     heuristic.optimize()
+    heuristic.write_result("results/heuristics_result_1.json")
