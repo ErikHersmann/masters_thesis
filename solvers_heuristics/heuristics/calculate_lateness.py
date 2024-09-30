@@ -1,4 +1,6 @@
-def calculate_lateness(order_on_machines: list, jobs_seminars: list, machines: list) -> int:  
+def calculate_lateness(
+    order_on_machines: list, jobs_seminars: list, machines: list
+) -> int:
     """Given a List of Lists of orders of jobs, the jobs and seminars and the machines at t=0
     Calculate the lateness of the given solution (order vectors)
 
@@ -16,7 +18,16 @@ def calculate_lateness(order_on_machines: list, jobs_seminars: list, machines: l
         if countdown > 0:
             continue
         current_job = order_on_machines[machine_idx].pop(0)
-        # Calculate the processing duration here
-        current_processing_duration = 0
+        # Calculate the processing duration here (if its a non-seminar job)
+        if current_job["type"] != "seminar":
+            current_processing_duration = current_job["baseline_duration"] * (
+                current_job["required_skill_level"]
+                / machines[machine_idx]["skills"][current_job["required_skill"]]
+            )
+        else:
+            current_processing_duration = current_job["baseline_duration"]
         machine_countdowns[machine_idx] = current_processing_duration
+        # Update the proficiency of that machine here
+        
+        
     return 0
