@@ -10,24 +10,13 @@ class heuristic_1:
         self.verbose = verbose
         with open("../../resources/config.json", "r") as f:
             self.config_dict = json.load(f)
-
-        # must be a list of dicts
-
-        # this should come from a file or generator function and contain tuples like this
-        # single_job = {'skill_required': Skills.C_Sharp,
-        #               'skill_level_required': 5,
-        #               'base_duration': 20,
-        #               'deadline': 40,
-        #               'index': 0,
-        #               'name': "performance benchmarking",
-        #              }
-        with open("../../data_generation/output/jobset_0.json", "r") as f:
+        with open("../../data_generation/output/jobset_1.json", "r") as f:
             self.jobs = json.load(f)
-        # add this urself
         with open("../../data_generation/output/seminarset_basic_0.json", "r") as f:
             self.seminars = json.load(f)
         with open("../../data_generation/output/machineset_0.json", "r") as f:
             self.machine_qualifications = json.load(f)
+        self._initial_machines = self.machine_qualifications[:]
         with open("../../data_generation/output/learning_curveset_0.json") as f:
             learning_curves = json.load(f)
             self.learning_curves = [
@@ -35,6 +24,10 @@ class heuristic_1:
                 + machine["growth_const"]
                 for machine in learning_curves
             ]
+            for machine_idx, machine in enumerate(learning_curves):
+                self._initial_machines[machine_idx]["alpha"] = machine["growth_factor"]
+                self._initial_machines[machine_idx]["beta"] = machine["growth_const"]
+                
         self.number_of_machines = len(self.machine_qualifications)
         self.job_order_on_machines = [[] for _ in range(self.number_of_machines)]
 
@@ -211,9 +204,14 @@ class heuristic_1:
         ##########
 
         print(self.calculate_lateness())
+
     def write_result(self, path):
+        output = {}
+        output["order"] = self.job_order_on_machines
+        output["machines"] = self._initial_machines
         with open(path, "w") as f:
-            json.dump(self.job_order_on_machines, f)
+            json.dump(output, f)
+
 
 if __name__ == "__main__":
     heuristic = heuristic_1(True)

@@ -44,6 +44,7 @@ if __name__ == "__main__":
                 "name": "".join(
                     [chr(random.randint(first_letter, last_letter)) for _ in range(10)]
                 ),
+                "type": "job"
             }
         )
 
