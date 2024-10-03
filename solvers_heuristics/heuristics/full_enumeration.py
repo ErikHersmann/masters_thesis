@@ -39,15 +39,17 @@ def enumerate_all_solutions(N_JOBS, N_SEMINARS, N_MACHINES):
 
 
 if __name__ == "__main__":
-    N_JOBS = 2
+    N_JOBS = 5
     N_MACHINES = 2
-    N_SEMINARS = 3
+    N_SEMINARS = 1
+    result = enumerate_all_solutions(
+        N_JOBS=N_JOBS, N_SEMINARS=N_SEMINARS, N_MACHINES=N_MACHINES
+    )
     with open(
-        f"results/jobs-{N_JOBS}_seminars-{N_SEMINARS}_machines-{N_MACHINES}.json", "w"
+        f"results/j{N_JOBS}_s{N_SEMINARS}_m{N_MACHINES}_enumeration.json", "w"
     ) as f:
         json.dump(
-            enumerate_all_solutions(
-                N_JOBS=N_JOBS, N_SEMINARS=N_SEMINARS, N_MACHINES=N_MACHINES
-            ),
+            result,
             f,
         )
+    print(f"Solution count {len(result)}")
