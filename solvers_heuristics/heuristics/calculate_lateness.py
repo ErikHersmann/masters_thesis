@@ -1,7 +1,8 @@
 from sys import argv
 import json
 from math import ceil
-import pprint
+from pprint import pprint
+from copy import  deepcopy
 
 
 def calculate_lateness(order_on_machines: list, machines: list) -> int:
@@ -55,6 +56,8 @@ def calculate_lateness(order_on_machines: list, machines: list) -> int:
         # print([current_time + m for m in machine_countdowns])
         current_time += 1
 
+    if lateness == -170:
+        pprint(machines)
     return lateness
 
 
@@ -82,21 +85,25 @@ if __name__ == "__main__":
         correction_idx = len(jobs)
         with open(seminars_path, "r") as f:
             jobs.extend(json.load(f))
-        
+
         for key in range(len(jobs)):
-            if jobs[key]['index'] == -1:
-                jobs[key]['index'] = correction_idx
+            if jobs[key]["index"] == -1:
+                jobs[key]["index"] = correction_idx
                 correction_idx += 1
-        
+        pprint(machines)
         best = [0]
-        
+
         for row_idx, solution in enumerate(solutions):
-            order = [[jobs[idx] for idx in machine] for machine in solution['solution']]
-            lateness = calculate_lateness(order, machines)
-            solutions[row_idx]['lateness'] = lateness
+            order = [[jobs[idx] for idx in machine] for machine in solution["solution"]]
+            lateness = calculate_lateness(order, deepcopy(machines))
+            solutions[row_idx]["lateness"] = lateness
             if lateness < best[0]:
                 best = [lateness, solution]
-                print(best)
-            
+        pprint(machines)
+        print(best[0])
+        pprint(
+            [[jobs[idx] for idx in machine] for machine in best[1]["solution"]],
+        )
+
         with open(solutions_path, "w") as f:
             json.dump(solutions, f)
