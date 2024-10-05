@@ -5,8 +5,14 @@ from pprint import pprint
 from copy import  deepcopy
 
 
+# Replace with config dict
+with open("../../resources/config.json", "r") as f:
+    config = json.load(f)
+SKILL_LIMIT_UB = config["skill_config"]["max_machine_skill"]
+
+
 def calculate_lateness(order_on_machines: list, machines: list) -> int:
-    """Given a List of Lists of orders of jobs, the jobs and seminars and the machines at t=0
+    """Given a List of Lists of orders of jobs (with details of each job/seminar), and the machines at t=0
     Calculate the lateness of the given solution (order vectors)
 
     Args:
@@ -48,11 +54,11 @@ def calculate_lateness(order_on_machines: list, machines: list) -> int:
             )
 
             # Update the proficiency of that machine here
-            machines[machine_idx]["skills"][current_job["skill_required"]] = (
+            machines[machine_idx]["skills"][current_job["skill_required"]] = min((
                 machines[machine_idx]["beta"]
                 + machines[machine_idx]["alpha"]
                 * machines[machine_idx]["skills"][current_job["skill_required"]]
-            )
+            ), SKILL_LIMIT_UB)
         # print([current_time + m for m in machine_countdowns])
         current_time += 1
 
@@ -62,16 +68,19 @@ def calculate_lateness(order_on_machines: list, machines: list) -> int:
 
 
 if __name__ == "__main__":
-    testing = True
-    if not testing:
+    run_on_full_enumeration = True
+    if not run_on_full_enumeration:
         if len(argv) < 2:
             print(f"no path given")
+            exit(-1)
         else:
             path = argv[1]
         with open(path, "r") as f:
             jsonfile = json.load(f)
-        # print(calculate_lateness(jsonfile["order"], jsonfile["machines"]))
-    elif testing:
+            print(calculate_lateness(jsonfile["order"], jsonfile["machines"]))
+            
+    
+    elif run_on_full_enumeration:
         solutions_path = "results/j5_s1_m2_enumeration.json"
         with open(solutions_path, "r") as f:
             solutions = json.load(f)
@@ -105,5 +114,6 @@ if __name__ == "__main__":
             [[jobs[idx] for idx in machine] for machine in best[1]["solution"]],
         )
 
+        # Write the lateness results back
         with open(solutions_path, "w") as f:
             json.dump(solutions, f)
