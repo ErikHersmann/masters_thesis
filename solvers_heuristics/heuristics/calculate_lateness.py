@@ -11,7 +11,9 @@ with open("../../resources/config.json", "r") as f:
 SKILL_LIMIT_UB = config["skill_config"]["max_machine_skill"]
 
 
-def calculate_lateness(order_on_machines: list, machines: list) -> int:
+# Replace this with a class at some point
+
+def calculate_lateness_directly(order_on_machines: list, machines: list) -> int:
     """Given a List of Lists of orders of jobs (with details of each job/seminar), and the machines at t=0
     Calculate the lateness of the given solution (order vectors)
 
@@ -77,7 +79,7 @@ if __name__ == "__main__":
             path = argv[1]
         with open(path, "r") as f:
             jsonfile = json.load(f)
-            print(calculate_lateness(jsonfile["order"], jsonfile["machines"]))
+            print(calculate_lateness_directly(jsonfile["order"], jsonfile["machines"]))
             
     
     elif run_on_full_enumeration:
@@ -104,7 +106,7 @@ if __name__ == "__main__":
 
         for row_idx, solution in enumerate(solutions):
             order = [[jobs[idx] for idx in machine] for machine in solution["solution"]]
-            lateness = calculate_lateness(order, deepcopy(machines))
+            lateness = calculate_lateness_directly(order, deepcopy(machines))
             solutions[row_idx]["lateness"] = lateness
             if lateness < best[0]:
                 best = [lateness, solution]
