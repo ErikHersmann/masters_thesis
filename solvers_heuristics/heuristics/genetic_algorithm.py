@@ -34,7 +34,7 @@ class genetic_algorithm:
                     idx = choice(all_jobs)
                     while idx in jobs_picked or idx in cur_solution[-1]:
                         idx = choice(all_jobs)
-                    if idx < self.N_JOBS-1:
+                    if idx < self.N_JOBS - 1:
                         jobs_picked.append(idx)
                     cur_solution[-1].append(idx)
             # If jobs remain here
@@ -53,7 +53,27 @@ class genetic_algorithm:
                     # print(f"Shuffled {candidate_index} {machine_index}")
 
     def repair(self):
-        pass
+        # Not all jobs are there
+        # Jobs, Seminars are double
+        for candidate_index, candidate in enumerate(self.current_generation):
+            current_jobs = []
+            for machine_index in range(len(candidate)):
+                self.current_generation[candidate_index][machine_index] = list(
+                    set(self.current_generation[candidate_index][machine_index])
+                )
+                for job_index, job in self.current_generation[candidate_index][
+                    machine_index
+                ]:
+                    if job < self.N_JOBS and job in current_jobs:
+                        self.current_generation[candidate_index][machine_index].pop(
+                            job_index
+                        )
+                current_jobs.extend(
+                    self.current_generation[candidate_index][machine_index]
+                )
+            for job in range(self.N_JOBS):
+                if job not in current_jobs:
+                    self.current_generation[candidate_index][-1].append(job)
 
     def selection(self):
         pass
