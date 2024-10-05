@@ -18,6 +18,7 @@ class genetic_algorithm:
         self.N_SEMINARS = N_SEMINARS
         self.N_MACHINES = N_MACHINES
         self.current_generation = []
+        # self.current_fitness = []
         self.N_FIRST_GEN = 4
         self.current_epoch = 1
         self.mutation_probability = 0.05
@@ -76,7 +77,9 @@ class genetic_algorithm:
                     self.current_generation[candidate_index][-1].append(job)
 
     def selection(self):
-        pass
+        shuffle(self.current_generation)
+        for idx in range(len(self.current_generation), step=2):
+            print(idx, idx+1)
 
     def recombination(self):
         pass
@@ -88,9 +91,10 @@ class genetic_algorithm:
 if __name__ == "__main__":
     algo = genetic_algorithm(3, 2, 2)
     algo.generate_first_generation()
-    print(algo)
+    # print(algo)
     algo.mutate()
-    print(algo)
+    # print(algo)
+    algo.selection()
     # add lateness to each individual
     # recombine them
     # mutate them
