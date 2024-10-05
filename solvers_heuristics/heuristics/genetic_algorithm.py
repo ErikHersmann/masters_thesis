@@ -27,6 +27,7 @@ class genetic_algorithm:
         self.current_epoch = 1
         self.mutation_probability = 0.05
         self.lateness_calculator = None
+        self.k_best = 2
         self.generate_first_generation()
 
     def generate_first_generation(self):
