@@ -9,9 +9,10 @@
 - use a greedy heuristic and improve upon that via neighborhood-search (should have been done already in the literature for similar problems)
 
 ## Answers regarding the first meeting
-- Vector of (Job-Index, End-Time) Tuples for each machine (This allows for easy calculation of lateness)
+- Vector of (job/seminar indices) for each machine
 - Linearization in progress
 - Upper bound from heuristic (or consider no learning effect, no seminars and somehow calculate lateness from that cheaply)
 - Data generation completely random for now (reason this later)
 - Done
 - Open (heuristic from literature)
+
