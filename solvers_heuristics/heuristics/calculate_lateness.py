@@ -2,7 +2,7 @@ from sys import argv
 import json
 from math import ceil
 from pprint import pprint
-from copy import  deepcopy
+from copy import deepcopy
 
 
 # Replace with config dict
@@ -12,6 +12,61 @@ SKILL_LIMIT_UB = config["skill_config"]["max_machine_skill"]
 
 
 # Replace this with a class at some point
+class calculate_lateness:
+    def __init__(self, machines, jobs_seminars) -> None:
+        self.machines = machines
+        self.jobs_seminars = jobs_seminars
+        with open("../../resources/config.json", "r") as f:
+            config = json.load(f)
+        self.SKILL_LIMIT_UB = config["skill_config"]["max_machine_skill"]
+
+    def calculate(self, order):
+        order = [[self.jobs_seminars[idx] for idx in machine] for machine in deepcopy(order)]
+        machines = deepcopy(self.machines)
+        machine_countdowns = [0 for _ in range(len(order))]
+        lateness = 0
+        current_time = 0
+        while True:
+            machine_countdowns = [max(0, val - 1) for val in machine_countdowns]
+            if sum([len(order) for order in order]) == 0:
+                break
+            for machine_idx, countdown in enumerate(machine_countdowns):
+                # print(machine_idx)
+                if countdown > 0 or len(order[machine_idx]) == 0:
+                    continue
+                else:
+                    current_job = order[machine_idx].pop(0)
+                # Calculate the processing duration here (if its a non-seminar job)
+                if current_job["type"] != "seminar":
+                    current_processing_duration = ceil(
+                        current_job["base_duration"]
+                        * (
+                            current_job["skill_level_required"]
+                            / machines[machine_idx]["skills"][
+                                current_job["skill_required"]
+                            ]
+                        )
+                    )
+                else:
+                    current_processing_duration = current_job["base_duration"]
+                # print(f"m {machine_idx} skill {current_job['skill_required']} level required {current_job['skill_level_required']} machine skill {machines[machine_idx]['skills']}")
+                machine_countdowns[machine_idx] = current_processing_duration
+
+                lateness += (
+                    current_time + current_processing_duration - current_job["deadline"]
+                )
+
+                machines[machine_idx]["skills"][current_job["skill_required"]] = min(
+                    (
+                        machines[machine_idx]["beta"]
+                        + machines[machine_idx]["alpha"]
+                        * machines[machine_idx]["skills"][current_job["skill_required"]]
+                    ),
+                    self.SKILL_LIMIT_UB,
+                )
+            current_time += 1
+        return lateness
+
 
 def calculate_lateness_directly(order_on_machines: list, machines: list) -> int:
     """Given a List of Lists of orders of jobs (with details of each job/seminar), and the machines at t=0
@@ -56,16 +111,16 @@ def calculate_lateness_directly(order_on_machines: list, machines: list) -> int:
             )
 
             # Update the proficiency of that machine here
-            machines[machine_idx]["skills"][current_job["skill_required"]] = min((
-                machines[machine_idx]["beta"]
-                + machines[machine_idx]["alpha"]
-                * machines[machine_idx]["skills"][current_job["skill_required"]]
-            ), SKILL_LIMIT_UB)
+            machines[machine_idx]["skills"][current_job["skill_required"]] = min(
+                (
+                    machines[machine_idx]["beta"]
+                    + machines[machine_idx]["alpha"]
+                    * machines[machine_idx]["skills"][current_job["skill_required"]]
+                ),
+                SKILL_LIMIT_UB,
+            )
         # print([current_time + m for m in machine_countdowns])
         current_time += 1
-
-    if lateness == -170:
-        pprint(machines)
     return lateness
 
 
@@ -80,8 +135,7 @@ if __name__ == "__main__":
         with open(path, "r") as f:
             jsonfile = json.load(f)
             print(calculate_lateness_directly(jsonfile["order"], jsonfile["machines"]))
-            
-    
+
     elif run_on_full_enumeration:
         solutions_path = "results/j5_s1_m2_enumeration.json"
         with open(solutions_path, "r") as f:
