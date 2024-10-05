@@ -81,7 +81,8 @@ class genetic_algorithm:
                     self.current_generation[candidate_index][-1].append(job)
 
     def selection(self):
-        """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one
+        """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one  
+        Maybe keep the top k ones always regardless of of win or lose
         """        
         shuffle(self.current_generation)
         next_generation = []
