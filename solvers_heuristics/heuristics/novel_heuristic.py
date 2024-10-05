@@ -1,6 +1,6 @@
 import json
 from math import ceil
-
+from copy import deepcopy
 
 class heuristic_1:
     def __init__(self, verbose=False) -> None:
@@ -10,26 +10,13 @@ class heuristic_1:
         self.verbose = verbose
         with open("../../resources/config.json", "r") as f:
             self.config_dict = json.load(f)
-
-        self.number_of_machines = self.config_dict["number_of_machines"]
-        # must be a list of dicts
-        self.job_order_on_machines = [[] for _ in range(self.number_of_machines)]
-
-        # this should come from a file or generator function and contain tuples like this
-        # single_job = {'skill_required': Skills.C_Sharp,
-        #               'skill_level_required': 5,
-        #               'base_duration': 20,
-        #               'deadline': 40,
-        #               'index': 0,
-        #               'name': "performance benchmarking",
-        #              }
-        with open("../../data_generation/output/jobset_0.json", "r") as f:
+        with open("../../data_generation/output/jobset_1.json", "r") as f:
             self.jobs = json.load(f)
-        # add this urself
         with open("../../data_generation/output/seminarset_basic_0.json", "r") as f:
             self.seminars = json.load(f)
         with open("../../data_generation/output/machineset_0.json", "r") as f:
             self.machine_qualifications = json.load(f)
+        self._initial_machines = deepcopy(self.machine_qualifications)
         with open("../../data_generation/output/learning_curveset_0.json") as f:
             learning_curves = json.load(f)
             self.learning_curves = [
@@ -37,6 +24,12 @@ class heuristic_1:
                 + machine["growth_const"]
                 for machine in learning_curves
             ]
+            for machine_idx, machine in enumerate(learning_curves):
+                self._initial_machines[machine_idx]["alpha"] = machine["growth_factor"]
+                self._initial_machines[machine_idx]["beta"] = machine["growth_const"]
+
+        self.number_of_machines = len(self.machine_qualifications)
+        self.job_order_on_machines = [[] for _ in range(self.number_of_machines)]
 
         if self.verbose:
             self.dprint(self.jobs, "Jobs")
@@ -160,6 +153,9 @@ class heuristic_1:
                         )
                     )
                 )
+                print(
+                    f"m {machine} j {job['index']} {job['base_duration']}*({job['skill_level_required']}/{self.machine_qualifications[machine]['skills'][job['skill_required']]})={job['base_duration']*(job['skill_level_required']/self.machine_qualifications[machine]['skills'][job['skill_required']])})"
+                )
             all_current_machine_processing_times.append(
                 (machine, current_machine_processing_times)
             )
@@ -174,7 +170,7 @@ class heuristic_1:
         while len(self.jobs) > 0:
             if self.verbose:
                 print(f"t\t{self.current_time}")
-            self.dprint(self.machine_qualifications, "Qualifications")
+                # self.dprint(self.machine_qualifications, "Qualifications")
             # Calculate times list for all jobs for all free machines
             self.all_current_machine_processing_times = (
                 self.get_current_machine_processing_times()
@@ -212,7 +208,15 @@ class heuristic_1:
 
         print(self.calculate_lateness())
 
+    def write_result(self, path):
+        output = {}
+        output["order"] = self.job_order_on_machines
+        output["machines"] = self._initial_machines
+        with open(path, "w") as f:
+            json.dump(output, f)
+
 
 if __name__ == "__main__":
     heuristic = heuristic_1(True)
     heuristic.optimize()
+    heuristic.write_result("results/heuristics_result_1.json")

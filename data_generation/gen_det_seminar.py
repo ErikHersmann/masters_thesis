@@ -1,4 +1,4 @@
-from data_generation.gen_ran_jobs import get_config_dict
+from gen_ran_jobs import get_config_dict
 import json
 
 
@@ -13,7 +13,8 @@ if __name__ == "__main__":
             'deadline': -1,
             'index': -1,
             'name': "seminar",
-            'skill_improvement_baseline': 5
+            'skill_improvement_baseline': 5,
+            "type": "seminar"
         })
     with open("output/seminarset_basic_0.json", "w") as f:
         json.dump(seminars, f)
