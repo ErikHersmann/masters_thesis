@@ -21,8 +21,10 @@ class calculate_lateness:
         self.SKILL_LIMIT_UB = config["skill_config"]["max_machine_skill"]
 
     def calculate(self, order):
-        order = [[self.jobs_seminars[idx] for idx in machine] for machine in deepcopy(order)]
+        order = [[deepcopy(self.jobs_seminars[idx]) for idx in machine] for machine in order]
         machines = deepcopy(self.machines)
+        
+        
         machine_countdowns = [0 for _ in range(len(order))]
         lateness = 0
         current_time = 0

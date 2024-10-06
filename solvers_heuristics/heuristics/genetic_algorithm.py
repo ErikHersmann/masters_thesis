@@ -10,11 +10,12 @@ from math import floor
 
 
 class genetic_algorithm:
-    """Recombine Parent generation  
-    Mutate their children  
-    Repair the children  
+    """Recombine Parent generation
+    Mutate their children
+    Repair the children
     Selection -> next parent generation
     """
+
     def __init__(self, N_JOBS, N_SEMINARS, N_MACHINES) -> None:
         with open("../../resources/config.json", "r") as f:
             self.config = json.load(f)
@@ -23,15 +24,17 @@ class genetic_algorithm:
         self.N_SEMINARS = N_SEMINARS
         self.N_MACHINES = N_MACHINES
         self.current_generation = []
-        self.N_PARENTS = 5
+        self.N_PARENTS = 6  # 5 is stable
         self.current_epoch = 1
         self.mutation_probability = 0.05
+        self.mut_treshold = 100 - floor(100 * self.mutation_probability)
         self.lateness_calculator = None
-        self.k_best = 2
+        self.MAX_POPULATION_SIZE = 50
+        self.best = [1000, None]
         self.generate_first_generation()
 
     def generate_first_generation(self):
-        # print(f"j{self.N_JOBS} s{self.N_SEMINARS} m{self.N_MACHINES}")
+        """Used to generate a semi random starting generation"""
         for _ in range(self.N_PARENTS):
             cur_solution = []
             all_jobs = list(range(self.N_JOBS + self.N_SEMINARS))
@@ -54,22 +57,36 @@ class genetic_algorithm:
         self.repair()
 
     def mutate(self):
+        """Random mutation via shuffling machine indices or job indices on a machine
+        probability can be set via the class parameter
+        """
         for candidate_index, candidate in enumerate(self.current_generation):
-            if randint(1, 100) > (100 - floor(100 * self.mutation_probability)):
+            if randint(1, 100) > self.mut_treshold:
                 shuffle(self.current_generation[candidate_index])
             for machine_index in range(len(candidate)):
-                if randint(1, 100) > (100 - floor(100 * self.mutation_probability)):
+                if randint(1, 100) > self.mut_treshold:
                     shuffle(self.current_generation[candidate_index][machine_index])
+        self.repair()
 
     def repair(self):
+        """Supposed to turn all solutions into valid ones
+        Might be buggy still
+        """
         for candidate_index, candidate in enumerate(self.current_generation):
             current_jobs = []
             for machine_index in range(len(candidate)):
                 current_seminars = []
+                self.current_generation[candidate_index][machine_index] = list(
+                    dict.fromkeys(
+                        self.current_generation[candidate_index][machine_index]
+                    )
+                )
                 for job_index, job in enumerate(
                     self.current_generation[candidate_index][machine_index]
                 ):
-                    if (job < self.N_JOBS and job in current_jobs) or (job >= self.N_JOBS and job in current_seminars):
+                    if (job < self.N_JOBS and job in current_jobs) or (
+                        job >= self.N_JOBS and job in current_seminars
+                    ):
                         self.current_generation[candidate_index][machine_index].pop(
                             job_index
                         )
@@ -82,39 +99,61 @@ class genetic_algorithm:
                     self.current_generation[candidate_index][-1].append(job)
 
     def selection(self):
-        """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one  
+        """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one
         Maybe keep the top k ones always regardless of of win or lose
-        """        
-        shuffle(self.current_generation)
-        next_generation = []
-        for idx in range(0, len(self.current_generation), 2):
-            fitness1 = self.lateness_calculator.calculate(self.current_generation[idx])
-            fitness2 = self.lateness_calculator.calculate(self.current_generation[idx+1])
-            if fitness1 >= fitness2:
-                print(fitness1)
-                next_generation.append(self.current_generation[idx])
-            else:
-                print(fitness2)
-                next_generation.append(self.current_generation[idx+1])
-        self.current_generation = next_generation
-        # self.current_epoch += 1
+        """
+        while True:
+            shuffle(self.current_generation)
+            next_generation = []
+            for idx in range(0, len(self.current_generation), 2):
+                if idx == len(self.current_generation) - 1:
+                    fitness2 = 10000
+                else:
+                    fitness2 = self.lateness_calculator.calculate(
+                        self.current_generation[idx + 1]
+                    )
+                fitness1 = self.lateness_calculator.calculate(
+                    self.current_generation[idx]
+                )
+                print(fitness1, fitness2)
+                if fitness1 <= fitness2:
+                    next_generation.append(self.current_generation[idx])
+                    if fitness1 < self.best[0]:
+                        self.best = [fitness1, self.current_generation[idx]]
+                else:
+                    next_generation.append(self.current_generation[idx + 1])
+                    if fitness2 < self.best[0]:
+                        self.best = [fitness2, self.current_generation[idx]]
+            self.current_generation = next_generation
+            if len(self.current_generation) <= self.MAX_POPULATION_SIZE:
+                break
 
     def recombination(self):
-        # for each machine pick a random idx in range 0 to minimum length of the 2 individuals
-        # Take half from parent 1 and half 2 from parent 2
+        """For each machine pick a random index in range 0 to minimum of the lengths of the two individuals
+        Take all entries up to the random index from parent 1's machine and all the entries after the index from parent 2's machine
+        """
         children = []
         for parent1_idx in range(len(self.current_generation)):
-            for parent2_idx in range(parent1_idx+1, len(self.current_generation)):
+            for parent2_idx in range(parent1_idx + 1, len(self.current_generation)):
                 children.append([])
                 machine_idx = 0
-                for m1, m2 in zip(self.current_generation[parent1_idx], self.current_generation[parent2_idx]):
+                for m1, m2 in zip(
+                    self.current_generation[parent1_idx],
+                    self.current_generation[parent2_idx],
+                ):
                     split_point = randint(0, min(len(m1), len(m2)))
-                    children[-1].append(self.current_generation[parent1_idx][machine_idx][:split_point+1])
-                    children[-1][-1].extend(self.current_generation[parent2_idx][machine_idx][split_point:])
+                    children[-1].append(
+                        self.current_generation[parent1_idx][machine_idx][
+                            : split_point + 1
+                        ]
+                    )
+                    children[-1][-1].extend(
+                        self.current_generation[parent2_idx][machine_idx][split_point:]
+                    )
                     machine_idx += 1
         self.current_generation = children
         self.current_epoch += 1
-        self.repair()
+        self.mutate()
 
     def __str__(self):
         return "\n".join([str(x) for x in self.current_generation])
@@ -142,11 +181,7 @@ def setup():
 if __name__ == "__main__":
     algo = genetic_algorithm(5, 2, 3)
     algo.lateness_calculator = calculate_lateness(*setup())
-    while algo.current_epoch < 6:
-        # print(f"before\n{algo}")
+    while algo.current_epoch < 20:
         algo.recombination()
-        algo.mutate()
-        algo.repair()
         algo.selection()
-        # print(f"after\n{algo}")
-    print(algo)
+    print(algo.best)
