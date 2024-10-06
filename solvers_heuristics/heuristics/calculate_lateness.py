@@ -21,7 +21,7 @@ class calculate_lateness:
         self.SKILL_LIMIT_UB = config["skill_config"]["max_machine_skill"]
 
     def calculate(self, order):
-        order = [[deepcopy(self.jobs_seminars[idx]) for idx in machine] for machine in order]
+        order = [[self.jobs_seminars[idx] for idx in machine] for machine in order]
         machines = deepcopy(self.machines)
         
         

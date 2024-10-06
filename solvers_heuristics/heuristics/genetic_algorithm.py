@@ -1,18 +1,19 @@
 import json
 from calculate_lateness import calculate_lateness
 from pprint import pprint
-from random import randint, choice, shuffle
+from random import randint, choice, shuffle, seed
 from math import floor
 
 
 # This should all work without knowledge of jobs/seminars/machines
 # All that is needed is N_JOBS, N_MACHINES, N_SEMINARS
+seed(7)
 
 
 class genetic_algorithm:
-    """Recombine Parent generation
-    Mutate their children
-    Repair the children
+    """Recombine Parent generation\\
+    Mutate their children\\
+    Repair the children\\
     Selection -> next parent generation
     """
 
@@ -39,7 +40,7 @@ class genetic_algorithm:
             cur_solution = []
             all_jobs = list(range(self.N_JOBS + self.N_SEMINARS))
             jobs_picked = []
-            for machine_idx in range(self.N_MACHINES):
+            for _ in range(self.N_MACHINES):
                 cur_solution.append([])
                 while randint(0, 1) == 1 and len(jobs_picked) < self.N_JOBS - 1:
                     idx = choice(all_jobs)
@@ -57,7 +58,7 @@ class genetic_algorithm:
         self.repair()
 
     def mutate(self):
-        """Random mutation via shuffling machine indices or job indices on a machine
+        """Random mutation via shuffling machine indices or job indices on a machine\\
         probability can be set via the class parameter
         """
         for candidate_index, candidate in enumerate(self.current_generation):
@@ -69,7 +70,7 @@ class genetic_algorithm:
         self.repair()
 
     def repair(self):
-        """Supposed to turn all solutions into valid ones
+        """Supposed to turn all solutions into valid ones\\
         Might be buggy still
         """
         for candidate_index, candidate in enumerate(self.current_generation):
@@ -99,7 +100,7 @@ class genetic_algorithm:
                     self.current_generation[candidate_index][-1].append(job)
 
     def selection(self):
-        """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one
+        """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one\\
         Maybe keep the top k ones always regardless of of win or lose
         """
         while True:
@@ -115,7 +116,7 @@ class genetic_algorithm:
                 fitness1 = self.lateness_calculator.calculate(
                     self.current_generation[idx]
                 )
-                print(fitness1, fitness2)
+                # print(fitness1, fitness2)
                 if fitness1 <= fitness2:
                     next_generation.append(self.current_generation[idx])
                     if fitness1 < self.best[0]:
@@ -129,7 +130,7 @@ class genetic_algorithm:
                 break
 
     def recombination(self):
-        """For each machine pick a random index in range 0 to minimum of the lengths of the two individuals
+        """For each machine pick a random index in range 0 to minimum of the lengths of the two individuals\\
         Take all entries up to the random index from parent 1's machine and all the entries after the index from parent 2's machine
         """
         children = []
