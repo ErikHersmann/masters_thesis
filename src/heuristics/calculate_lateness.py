@@ -23,22 +23,12 @@ class calculate_lateness:
     def calculate(self, order):
         order = [[self.jobs_seminars[idx] for idx in machine] for machine in order]
         machines = deepcopy(self.machines)
-        
-        
-        machine_countdowns = [0 for _ in range(len(order))]
         lateness = 0
-        current_time = 0
-        while True:
-            machine_countdowns = [max(0, val - 1) for val in machine_countdowns]
-            if sum([len(order) for order in order]) == 0:
-                break
-            for machine_idx, countdown in enumerate(machine_countdowns):
-                # print(machine_idx)
-                if countdown > 0 or len(order[machine_idx]) == 0:
-                    continue
-                else:
-                    current_job = order[machine_idx].pop(0)
-                # Calculate the processing duration here (if its a non-seminar job)
+
+        for machine_idx in range(len(machines)):
+            current_time = 0
+            while len(order[machine_idx]) > 0:
+                current_job = order[machine_idx].pop(0)
                 if current_job["type"] != "seminar":
                     current_processing_duration = ceil(
                         current_job["base_duration"]
@@ -49,14 +39,15 @@ class calculate_lateness:
                             ]
                         )
                     )
+                    lateness += (
+                        current_time
+                        + current_processing_duration
+                        - current_job["deadline"]
+                    )
+                    # print(f"t {current_time} machine {machine_idx} lateness {lateness} others {current_time} {current_processing_duration} {current_job['deadline']}")
+                    
                 else:
                     current_processing_duration = current_job["base_duration"]
-                # print(f"m {machine_idx} skill {current_job['skill_required']} level required {current_job['skill_level_required']} machine skill {machines[machine_idx]['skills']}")
-                machine_countdowns[machine_idx] = current_processing_duration
-
-                lateness += (
-                    current_time + current_processing_duration - current_job["deadline"]
-                )
 
                 machines[machine_idx]["skills"][current_job["skill_required"]] = min(
                     (
@@ -66,7 +57,7 @@ class calculate_lateness:
                     ),
                     self.SKILL_LIMIT_UB,
                 )
-            current_time += 1
+                current_time += current_processing_duration
         return lateness
 
 
