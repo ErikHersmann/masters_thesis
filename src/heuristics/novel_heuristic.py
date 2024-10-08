@@ -10,14 +10,14 @@ class heuristic_1:
         self.verbose = verbose
         with open("../../resources/config.json", "r") as f:
             self.config_dict = json.load(f)
-        with open("../../data_generation/output/jobset_1.json", "r") as f:
+        with open("../../data/output/jobset_1.json", "r") as f:
             self.jobs = json.load(f)
-        with open("../../data_generation/output/seminarset_basic_0.json", "r") as f:
+        with open("../../data/output/seminarset_basic_0.json", "r") as f:
             self.seminars = json.load(f)
-        with open("../../data_generation/output/machineset_0.json", "r") as f:
+        with open("../../data/output/machineset_0.json", "r") as f:
             self.machine_qualifications = json.load(f)
         self._initial_machines = deepcopy(self.machine_qualifications)
-        with open("../../data_generation/output/learning_curveset_0.json") as f:
+        with open("../../data/output/learning_curveset_0.json") as f:
             learning_curves = json.load(f)
             self.learning_curves = [
                 lambda skill_level: int(skill_level * machine["growth_factor"])

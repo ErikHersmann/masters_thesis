@@ -36,15 +36,15 @@ class linear_solver:
         return range(self.SKILL_LEVEL_LB, self.SKILL_LEVEL_UB + 1)
 
     def setup(self):
-        """Sets up jobs, seminars, qualifications, parameters by reading from "../../data_generation" directory"""
-        with open("../../data_generation/output/jobset_0.json", "r") as f:
+        """Sets up jobs, seminars, qualifications, parameters by reading from "../../data" directory"""
+        with open("../../data/output/jobset_0.json", "r") as f:
             self.jobs = json.load(f)
         # add this urself
-        with open("../../data_generation/output/seminarset_basic_0.json", "r") as f:
+        with open("../../data/output/seminarset_basic_0.json", "r") as f:
             self.seminars = json.load(f)
-        with open("../../data_generation/output/machineset_0.json", "r") as f:
+        with open("../../data/output/machineset_0.json", "r") as f:
             self.qualifications = json.load(f)
-        with open("../../data_generation/output/learning_curveset_0.json") as f:
+        with open("../../data/output/learning_curveset_0.json") as f:
             learning_curves = json.load(f)
             self.learning_curves = [
                 {"beta": machine["growth_const"], "alpha": machine["growth_factor"]}

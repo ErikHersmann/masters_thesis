@@ -142,11 +142,11 @@ if __name__ == "__main__":
         solutions_path = "results/j5_s1_m2_enumeration.json"
         with open(solutions_path, "r") as f:
             solutions = json.load(f)
-        machines_path = "../../data_generation/output/machineset_0.json"
+        machines_path = "../../data/output/machineset_0.json"
         with open(machines_path, "r") as f:
             machines = json.load(f)
-        jobs_path = "../../data_generation/output/jobset_2.json"
-        seminars_path = "../../data_generation/output/seminarset_basic_0.json"
+        jobs_path = "../../data/output/jobset_2.json"
+        seminars_path = "../../data/output/seminarset_basic_0.json"
         with open(jobs_path, "r") as f:
             jobs = json.load(f)
         correction_idx = len(jobs)
