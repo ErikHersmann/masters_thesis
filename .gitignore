@@ -1,6 +1,7 @@
 resources
 data_generation/output
 data_generation/__pycache__
-solvers_heuristics/heuristics/results
-solvers_heuristics/solvers/results
-solvers_heuristics/solvers/__pycache__
+src/heuristics/results
+src/solvers/results
+src/solvers/__pycache__
+solvers_heuristics
