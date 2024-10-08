@@ -11,7 +11,6 @@ with open("../../resources/config.json", "r") as f:
 SKILL_LIMIT_UB = config["skill_config"]["max_machine_skill"]
 
 
-# Replace this with a class at some point
 class calculate_lateness:
     def __init__(self, machines, jobs_seminars) -> None:
         self.machines = machines
@@ -25,8 +24,14 @@ class calculate_lateness:
         machines = deepcopy(self.machines)
         lateness = 0
 
+        ###########
+        # MACHINES#
+        ###########
         for machine_idx in range(len(machines)):
             current_time = 0
+            #######
+            # JOBS#
+            #######
             while len(order[machine_idx]) > 0:
                 current_job = order[machine_idx].pop(0)
                 if current_job["type"] != "seminar":
@@ -45,7 +50,7 @@ class calculate_lateness:
                         - current_job["deadline"]
                     )
                     # print(f"t {current_time} machine {machine_idx} lateness {lateness} others {current_time} {current_processing_duration} {current_job['deadline']}")
-                    
+
                 else:
                     current_processing_duration = current_job["base_duration"]
 
