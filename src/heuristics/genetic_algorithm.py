@@ -4,11 +4,6 @@ from math import floor
 from algorithm_template import heuristic_template
 
 
-# This should all work without knowledge of jobs/seminars/machines
-# All that is needed is N_JOBS, N_MACHINES, N_SEMINARS
-seed(7)
-
-
 class genetic_algorithm(heuristic_template):
     """Recombine Parent generation\\
     Mutate their children\\
@@ -18,6 +13,7 @@ class genetic_algorithm(heuristic_template):
 
     def __init__(self, machines, jobs_seminars) -> None:
         heuristic_template.__init__(self, machines, jobs_seminars)
+        seed(7)
         self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
         self.MAX_POP_SIZE = 50
         self.F_MUT_PROB = 0.05
