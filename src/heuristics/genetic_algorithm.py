@@ -25,7 +25,7 @@ class genetic_algorithm:
         self.N_SEMINARS = N_SEMINARS
         self.N_MACHINES = N_MACHINES
         self.current_generation = []
-        self.N_PARENTS = 6  # 5 is stable
+        self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
         self.current_epoch = 1
         self.mutation_probability = 0.05
         self.mut_treshold = 100 - floor(100 * self.mutation_probability)
