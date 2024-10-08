@@ -33,6 +33,8 @@ class genetic_algorithm:
         self.MAX_POPULATION_SIZE = 50
         self.best = [1000, None]
         self.generate_first_generation()
+        
+    
 
     def generate_first_generation(self):
         """Used to generate a semi random starting generation"""
@@ -181,6 +183,7 @@ def setup():
 
 if __name__ == "__main__":
     algo = genetic_algorithm(5, 2, 3)
+    # Rewrite this to use a method for setting up the calculator and reading in the problem 
     algo.lateness_calculator = calculate_lateness(*setup())
     while algo.current_epoch < 20:
         algo.recombination()
