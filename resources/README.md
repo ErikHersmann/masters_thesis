@@ -16,3 +16,13 @@
 - Done
 - Open (heuristic from literature)
 
+## Questions for meeting 2
+- variable naming conventions:   
+$h^{\text{a}}$, $h^{\text{b}}$ instead of $a$, $b$ for auxiliary variables?  
+$x^{\text{start}}$, $x^{\text{skill}}$ instead of $x$, $y$ for decision variables?  
+$M^{\text{r}}$ instead of $R$
+- Should constants be non-italic ?
+- is the approach going in the right direction ?
+- bloat constraints ?
+- Should symbols be renamed eg machines to $i$ instead of $m$
+- Do all seminar participants have to partake in the seminar simultaneously (only 1 starting time for a seminar)
