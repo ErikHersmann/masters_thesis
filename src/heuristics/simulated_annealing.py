@@ -11,19 +11,25 @@ class simulated_annealing(heuristic_template):
     def __init__(self, machines, jobs_seminars) -> None:
         heuristic_template.__init__(self, machines, jobs_seminars)
         self.current_solution = None
-        self.temperature = 3 
-        self.K_MAX = 20000
+        self.temperature = None
+        self._starting_temperature = 100
+        self.K_MAX = 2000
         self.k = 1
         self.best = [10000, None]
+        self.visited = []
         self.generate_start()
 
     def generate_start(self):
         self.current_solution = [[] for _ in range(self.N_MACHINES)]
         self.current_solution[0] = list(range(self.N_JOBS))
+        
+    def temperature_generator(self, remainder):
+        return self._starting_temperature * remainder
 
     def step(self):
-        self.temperature = (1 - (self.k + 1) )/self.K_MAX
+        self.temperature = self.temperature_generator(1 - (self.k /self.K_MAX))
         new_neighbor = self.get_random_neighbor()
+        self.visited.append(new_neighbor)
         lateness_new = self.lateness_calculator.calculate(new_neighbor)
         if lateness_new < self.best[0]:
             self.best = [lateness_new, new_neighbor]
@@ -75,7 +81,7 @@ class simulated_annealing(heuristic_template):
                         possible_neighbors.append(
                             neighbor
                         )
-        return possible_neighbors
+        return [neighbor for neighbor in possible_neighbors if neighbor not in self.visited]
 
     def get_random_neighbor(self):
         return choice(self.enumerate_neighbors())
