@@ -46,16 +46,22 @@ if __name__ == "__main__":
 
     epoch_time = int(time.time())
     results = {
-        "machines": machines,
-        "jobs_seminars": jobs,
         "solutions": {
-            "genetic_algorithm": {"lateness": algo._best[0], "solution": algo._best[1], "runtime_seconds": finish_1},
+            "genetic_algorithm": {
+                "lateness": algo._best[0],
+                "solution": algo._best[1],
+                "runtime_seconds": finish_1,
+                "max_epoch": algo.MAX_EPOCH,
+            },
             "simulated_annealing": {
                 "lateness": algo2._best[0],
                 "solution": algo2._best[1],
-                "runtime_seconds": finish_2
+                "runtime_seconds": finish_2,
+                "max_k": algo2.K_MAX,
             },
         },
+        "machines": machines,
+        "jobs_seminars": jobs,
     }
     with open(f"results/{epoch_time}_benchmark.json", "w") as f:
         json.dump(results, f)
