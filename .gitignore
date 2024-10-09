@@ -1,6 +1,4 @@
-data/output
-data/__pycache__
 resources
-src/heuristics/results
-src/solvers/results
-src/*/__pycache__
+**/__pycache__/
+**/results
+**/output
