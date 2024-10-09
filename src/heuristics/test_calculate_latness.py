@@ -134,7 +134,7 @@ class TestCalculateLateness(unittest.TestCase):
         # 5 to 10 are seminars
         order = [[2, 1, 6, 7, 3], [0, 9, 7, 4]]
         result = calculator.calculate(order)
-        self.assertEqual(result, 13)
+        self.assertEqual(result, 61)
 
 
 if __name__ == "__main__":

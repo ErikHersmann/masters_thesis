@@ -13,6 +13,9 @@ class genetic_algorithm(heuristic_template):
 
     def __init__(self, machines, jobs_seminars) -> None:
         heuristic_template.__init__(self, machines, jobs_seminars)
+        print(
+            f"N_MACHINES {self.N_MACHINES} N_JOBS {self.N_JOBS} N_SEMINARS {self.N_SEMINARS}"
+        )
         seed(7)
         self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
         self.MAX_POP_SIZE = 50
@@ -170,7 +173,7 @@ def setup():
 
 if __name__ == "__main__":
     algo = genetic_algorithm(*setup())
-    while algo._current_epoch < 20:
+    while algo._current_epoch < 30:
         algo.recombination()
         algo.selection()
     print(algo._best)
