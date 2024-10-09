@@ -59,3 +59,4 @@ if __name__ == "__main__":
     }
     with open(f"results/{epoch_time}_benchmark.json", "w") as f:
         json.dump(results, f)
+    print(f"results at {epoch_time}_benchmark.json")
