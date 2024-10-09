@@ -13,12 +13,10 @@ class genetic_algorithm(heuristic_template):
 
     def __init__(self, machines, jobs_seminars) -> None:
         heuristic_template.__init__(self, machines, jobs_seminars)
-        print(
-            f"N_MACHINES {self.N_MACHINES} N_JOBS {self.N_JOBS} N_SEMINARS {self.N_SEMINARS}"
-        )
         seed(7)
         self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
         self.MAX_POP_SIZE = 50
+        self.MAX_EPOCH = 30
         self.F_MUT_PROB = 0.05
         self._current_epoch = 1
         self._mut_treshold = 100 - floor(100 * self.F_MUT_PROB)
@@ -152,28 +150,4 @@ class genetic_algorithm(heuristic_template):
         return "\n".join([str(x) for x in self._current_generation])
 
 
-def setup():
-    machines_path = "../../data/output/machineset_0.json"
-    with open(machines_path, "r") as f:
-        machines = json.load(f)
-    jobs_path = "../../data/output/jobset_2.json"
-    seminars_path = "../../data/output/seminarset_basic_0.json"
-    with open(jobs_path, "r") as f:
-        jobs = json.load(f)
-    correction_idx = len(jobs)
-    with open(seminars_path, "r") as f:
-        jobs.extend(json.load(f))
 
-    for key in range(len(jobs)):
-        if jobs[key]["index"] == -1:
-            jobs[key]["index"] = correction_idx
-            correction_idx += 1
-    return (machines, jobs)
-
-
-if __name__ == "__main__":
-    algo = genetic_algorithm(*setup())
-    while algo._current_epoch < 30:
-        algo.recombination()
-        algo.selection()
-    print(algo._best)

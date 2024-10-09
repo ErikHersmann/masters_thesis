@@ -5,8 +5,13 @@ import random, json
 
 
 def get_config_dict():
-    with open("../resources/config.json", "r") as f:
-        return json.load(f)
+    try:
+        with open("../resources/config.json", "r") as f:
+            config_dict = json.load(f)
+    except FileNotFoundError:
+        with open("../../resources/config.json", "r") as f:
+            config_dict = json.load(f)
+    return config_dict
 
 
 def write_output_without_overwrite(data):
@@ -22,16 +27,9 @@ def write_output_without_overwrite(data):
                 json.dump(data, f)
             break
 
-
-if __name__ == "__main__":
+def generate_jobs_seminars(NUM_JOBS=5):
     config_dict = get_config_dict()
     output = []
-    try:
-        NUM_JOBS = int(argv[1])
-    except:
-        NUM_JOBS = 3
-        print(f"no job count specified continuing with default {NUM_JOBS}")
-
     first_letter = ord("a")
     last_letter = ord("z")
     for idx in range(NUM_JOBS):
@@ -48,7 +46,7 @@ if __name__ == "__main__":
                 "type": "job",
             }
         )
-    for skill_idx, skill in enumerate(config_dict["skills"]):
+    for skill_idx, _ in enumerate(config_dict["skills"]):
         output.append(
             {
                 "skill_required": skill_idx,
@@ -61,5 +59,14 @@ if __name__ == "__main__":
                 "type": "seminar",
             }
         )
+    return output
 
+
+if __name__ == "__main__":
+    try:
+        NUM_JOBS = int(argv[1])
+    except:
+        NUM_JOBS = 3
+        print(f"no job count specified continuing with default {NUM_JOBS}")
+    output = generate_jobs_seminars(NUM_JOBS)
     write_output_without_overwrite(output)
