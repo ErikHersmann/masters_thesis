@@ -1,6 +1,7 @@
-import json, sys, os
+import json, sys, os, time
 from simulated_annealing import simulated_annealing
 from genetic_algorithm import genetic_algorithm
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from data.gen_jobs_and_seminars import generate_jobs_seminars
 from data.gen_ran_machines import generate_machines
@@ -25,18 +26,36 @@ if __name__ == "__main__":
     N_SEMINARS = sum([1 for job in jobs if job["type"] == "seminar"])
     # setup_tuple = setup()
     setup_tuple = (machines, jobs)
-    print(
-            f"N_MACHINES {N_MACHINES} N_JOBS {N_JOBS} N_SEMINARS {N_SEMINARS}"
-        )
+    print(f"N_MACHINES {N_MACHINES} N_JOBS {N_JOBS} N_SEMINARS {N_SEMINARS}")
     print(f"Genetic algorithm")
+    start = time.time_ns()
     algo = genetic_algorithm(*setup_tuple)
     while algo._current_epoch < algo.MAX_EPOCH:
         algo.recombination()
         algo.selection()
+    finish_1 = (time.time_ns() - start) / 10**9
     print(algo._best)
 
     print(f"Simulated annealing")
-    algo = simulated_annealing(*setup_tuple)
-    while algo.k < algo.K_MAX:
-        algo.step()
-    print(algo._best)
+    start = time.time_ns()
+    algo2 = simulated_annealing(*setup_tuple)
+    while algo2.k < algo2.K_MAX:
+        algo2.step()
+    finish_2 = (time.time_ns() - start) / 10**9
+    print(algo2._best)
+
+    epoch_time = int(time.time())
+    results = {
+        "machines": machines,
+        "jobs_seminars": jobs,
+        "solutions": {
+            "genetic_algorithm": {"lateness": algo._best[0], "solution": algo._best[1], "runtime_seconds": finish_1},
+            "simulated_annealing": {
+                "lateness": algo2._best[0],
+                "solution": algo2._best[1],
+                "runtime_seconds": finish_2
+            },
+        },
+    }
+    with open(f"results/{epoch_time}_benchmark.json", "w") as f:
+        json.dump(results, f)
