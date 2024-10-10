@@ -1,6 +1,8 @@
 import json
 from random import randint
 from sys import argv
+from math import floor
+import os
 
 
 def get_config_dict():
@@ -11,6 +13,20 @@ def get_config_dict():
         with open("../../resources/config.json", "r") as f:
             config_dict = json.load(f)
     return config_dict
+
+
+def write_output_without_overwrite(data):
+    appendix = 0
+    fname_base = "output/machineset_"
+    while True:
+        cfname = fname_base + str(appendix) + ".json"
+        if os.path.isfile(cfname):
+            appendix += 1
+            continue
+        else:
+            with open(cfname, "a") as f:
+                json.dump(data, f)
+            break
 
 
 def generate_machines(N_MACHINES):
@@ -31,8 +47,10 @@ def generate_machines(N_MACHINES):
                 ],
                 "alpha": 1 + (randint(1, max_growth) / 100),
                 "beta": randint(0, 2),
+                "l_cap": 0
             }
         )
+        machines[-1]['l_cap'] = floor((config_dict['skill_config']['max_machine_skill'] / machines[-1]['alpha']) - machines[-1]['beta'])
     return machines
 
 
@@ -41,6 +59,4 @@ if __name__ == "__main__":
         N_MACHINES = 3
     else:
         N_MACHINES = int(argv[1])
-    machines = generate_machines(N_MACHINES)
-    with open("output/machineset_0.json", "w") as f:
-        json.dump(machines, f)
+    write_output_without_overwrite(generate_machines(N_MACHINES))

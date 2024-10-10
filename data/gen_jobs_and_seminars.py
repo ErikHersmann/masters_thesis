@@ -1,4 +1,4 @@
-import os.path
+import os
 from enum import IntEnum
 from sys import argv
 import random, json
