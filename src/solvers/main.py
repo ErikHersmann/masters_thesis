@@ -1,6 +1,5 @@
 import json
 from pulp import LpVariable, LpProblem, LpMinimize, GUROBI
-from math import floor
 
 
 class linear_solver:
