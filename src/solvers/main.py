@@ -64,8 +64,8 @@ class linear_solver:
                 f"Jobs {self.N_JOBS} Machines: {self.N_MACHINES} Skills: {self.N_SKILLS} Time: {self.N_TIME} Product {self.N_JOBS*self.N_MACHINES*self.N_TIME*self.N_SKILLS}"
             )
 
-    def compile(self):
-        """Instantiates model"""
+    def pre_compile(self):
+        """Instantiates the model istance and the variables"""
         self.model = LpProblem("Human_Resource_Scheduling", LpMinimize)
 
         ############
@@ -75,8 +75,8 @@ class linear_solver:
             "a",
             [
                 (job1, job2, machine)
-                for job1 in range(self.N_JOBS)
-                for job2 in range(self.N_JOBS)
+                for job1 in range(self.N_JOBS_AND_SEMINARS)
+                for job2 in range(self.N_JOBS_AND_SEMINARS)
                 for machine in range(self.N_MACHINES)
             ],
             cat="Binary",
@@ -86,7 +86,7 @@ class linear_solver:
             [
                 (machine, job, time)
                 for machine in range(self.N_MACHINES)
-                for job in range(self.N_JOBS)
+                for job in range(self.N_JOBS_AND_SEMINARS)
                 for time in range(self.N_TIME)
             ],
             cat="Binary",
@@ -101,7 +101,7 @@ class linear_solver:
             ],
             cat="Integer",
             lowBound=self.SKILL_LEVEL_LB,
-            upBound=self.SKILL_LEVEL_UB
+            upBound=self.SKILL_LEVEL_UB,
         )
         self.skill_increased_helper_binary = LpVariable.dicts(
             "d",
@@ -118,7 +118,7 @@ class linear_solver:
             [
                 (machine, job, time, level, skill)
                 for machine in range(self.N_MACHINES)
-                for job in range(self.N_MACHINES)
+                for job in range(self.N_JOBS_AND_SEMINARS)
                 for time in range(self.N_TIME)
                 for level in self.skill_range()
                 for skill in range(self.N_SKILLS)
@@ -130,7 +130,7 @@ class linear_solver:
             [
                 (machine, job, time)
                 for machine in range(self.N_MACHINES)
-                for job in range(self.N_JOBS)
+                for job in range(self.N_JOBS_AND_SEMINARS)
                 for time in range(self.N_TIME)
             ],
             cat="Integer",
@@ -159,96 +159,36 @@ class linear_solver:
             cat="Binary",
         )
 
-        self.N_DECISION_VARIABLES = (
-            len(self.machine_one_job_constraint_helper_binary)
-            + len(self.start_cdot_duration_helper_binary)
-            + len(self.skill_level_index_integer)
-            + len(self.processing_times_integer)
-            + len(self.skill_increased_helper_binary)
-            + len(self.start_times_binary)
-            + len(self.skill_level_binary)
-            + len(self.start_cdot_skill_level_helper_binary)
-        )
-        if self.verbose:
-            print(f"Number of decision variable {self.N_DECISION_VARIABLES}")
+    def compile(self):
+        """Adds the constraints to the model"""
+        self.pre_compile()
         #####################
         # OBJECTIVE FUNCTION#
         #####################
-        self.lateness = LpVariable("lateness", lowBound=0, cat="Integer")
+        self.lateness = LpVariable("lateness", lowBound=-max([job['deadline'] for job in self.jobs]), cat="Integer")
         for job in range(self.N_JOBS):
             for machine in range(self.N_MACHINES):
-                # sum this over t
                 time_over_deadline = sum(
                     [
                         time * self.start_times_binary[(machine, job, time)]
-                        + self.processing_times_integer[(machine, job, time)]
-                        - self.jobs[job]["deadline"]
+                        + self.start_cdot_duration_helper_binary[(machine, job, time)]
+                        - (
+                            self.jobs[job]["deadline"]
+                            * self.start_times_binary[(machine, job, time)]
+                        )
                         for time in range(self.N_TIME)
                     ]
                 )
                 self.model += self.lateness >= time_over_deadline
         self.model += self.lateness
 
-        ############
-        # FUNCTIONS#
-        ############
-
-        # def learning_curve_function(machine, time, skill):
-        #     old_level = sum(
-        #         [
-        #             level * self.skill_level_binary[(machine, time, level, skill)]
-        #             for level in self.skill_range()
-        #         ]
-        #     )
-        #     increase_or_zero = sum(
-        #         [
-        #             self.start_times_binary[(machine, job_index, time)]
-        #             * (
-        #                 (
-        #                     self.learning_curves[machine]["beta"]
-        #                     + self.learning_curves[machine]["alpha"]
-        #                     * sum(
-        #                         [
-        #                             level
-        #                             * self.skill_level_binary[
-        #                                 (
-        #                                     machine,
-        #                                     time,
-        #                                     level,
-        #                                     self.jobs[job_index]["skill_required"],
-        #                                 )
-        #                             ]
-        #                             for level in range(
-        #                                 1,
-        #                                 floor(
-        #                                     (
-        #                                         self.SKILL_LEVEL_UB
-        #                                         / self.learning_curves[machine]["alpha"]
-        #                                     )
-        #                                     - self.learning_curves[machine]["beta"]
-        #                                 ),
-        #                             )
-        #                         ]
-        #                     )
-        #                 )
-        #                 - sum(
-        #                     [
-        #                         level
-        #                         * self.skill_level_binary[(machine, time, level, skill)]
-        #                         for level in self.skill_range()
-        #                     ]
-        #                 )
-        #             )
-        #             for job_index in range(self.N_JOBS)
-        #         ]
-        #     )
-        #     return old_level + increase_or_zero
-
         ##############
         # CONSTRAINTS#
         ##############
 
         # Set qualifications in each skill at time 0 from
+
+        pass
 
         # Machines must have at most one job on them for any given time t (Currently the implementation for chapter 3.1.2 -> Update to 3.1.3)
 
@@ -488,7 +428,7 @@ class linear_solver:
 
         # should be smaller or equal to the old level if q = 1
 
-    def solve(self):
+    def solve(self, write_verbose_output=False):
         """Solves the model with GUROBI"""
         ######################
         # SOLVING WITH GUROBI#
@@ -504,39 +444,39 @@ class linear_solver:
         )
         self.lateness = self.lateness.varValue
 
-        #############################
-        # EXTRACTING VARIABLE VALUES#
-        #############################
+        if write_verbose_output:
+            #############################
+            # EXTRACTING VARIABLE VALUES#
+            #############################
+            results = {}
 
-        results = {}
+            results["start_times_binary"] = [
+                index for index, var in self.start_times_binary.items() if var.value() == 1
+            ]
 
-        results["start_times_binary"] = [
-            index for index, var in self.start_times_binary.items() if var.value() == 1
-        ]
+            results["skill_level_binary"] = [
+                index for index, var in self.skill_level_binary.items() if var.value() == 1
+            ]
 
-        results["skill_level_binary"] = [
-            index for index, var in self.skill_level_binary.items() if var.value() == 1
-        ]
+            results["processing_times"] = {
+                str(index): var.value()
+                for index, var in self.processing_times_integer.items()
+            }
 
-        results["processing_times"] = {
-            str(index): var.value()
-            for index, var in self.processing_times_integer.items()
-        }
+            results["machine_one_job_constraint_helper_binary"] = [
+                index
+                for index, var in self.machine_one_job_constraint_helper_binary.items()
+                if var.value() == 1
+            ]
 
-        results["machine_one_job_constraint_helper_binary"] = [
-            index
-            for index, var in self.machine_one_job_constraint_helper_binary.items()
-            if var.value() == 1
-        ]
+            with open(self.RESULTS_DIR + "variable_values_debug.json", "w") as f:
+                json.dump(results, f, indent=4)
 
-        with open(self.RESULTS_DIR + "variable_values_debug.json", "w") as f:
-            json.dump(results, f, indent=4)
-
-        self.model.writeLP(self.RESULTS_DIR + "model.lp")
+            self.model.writeLP(self.RESULTS_DIR + "model.lp")
 
 
 if __name__ == "__main__":
     solver = linear_solver(verbose=True)
     solver.setup()
     solver.compile()
-    solver.solve()
+    solver.solve(False)
