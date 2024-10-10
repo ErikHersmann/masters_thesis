@@ -26,3 +26,34 @@ $M^{\text{r}}$ instead of $R$
 - bloat constraints ?
 - Should symbols be renamed eg machines to $i$ instead of $m$
 - Do all seminar participants have to partake in the seminar simultaneously (only 1 starting time for a seminar)
+
+## Notes from second meeting
+- Generate Instances (Small for Solvers, Big for heuristics) based on the actual data
+- Implement all of these 5
+	- MIP
+	- Full enumeration
+  	- Simulated Annealing
+  	- Genetic Algorithm
+  	- Priority Rule
+- Purge extra seminars from end of machines
+- Test + Debug the 5 implementations | next meeting middle of november (after finishing this)
+### Notes for thesis from second meeting
+- Introduction: Simple for anyone to understand
+- Literature review:
+	- Learning curve effects (cite how u got to ur learning curve function)
+ 	- Calculation studies
+  	- Design of algorithms
+  	- Fit ur research in the current landscape of similar literature
+  	- Reasoning
+- Main part:
+	- Problem description
+ 	- Example small
+  	- Assume you are an OR researcher not familiar with the topic when writing this
+  	- Use gantt charts for example and else
+  	- Calculation study + results + gantt charts + optimality diff
+  	- asymptotic count of variables
+  	- managerial insights
+- Conclusion: Describe instances and gneeration of those from company data
+- Direction for future research: Sync start times of seminars
+
+
