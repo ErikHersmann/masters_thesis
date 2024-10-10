@@ -15,7 +15,7 @@ class genetic_algorithm(heuristic_template):
         seed(7)
         self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
         self.MAX_POP_SIZE = 11
-        self.MAX_EPOCH = 1000
+        self.MAX_EPOCH = 500
         self.F_MUT_PROB = 0.10
         self._current_epoch = 1
         self._mut_treshold = 100 - floor(100 * self.F_MUT_PROB)
