@@ -594,6 +594,8 @@ class linear_solver:
                 for index, var in self.start_cdot_skill_level_helper_binary.items()
                 if var.value() == 1
             ]
+            results["machines"] = self.machines
+            results["jobs_seminars"] = self.jobs_seminars
 
             filename = os.path.join(self.RESULTS_DIR, "variable_values_debug_1.json")
             counter = 1
