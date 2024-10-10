@@ -1,4 +1,4 @@
-import json
+import json, os
 from pulp import LpVariable, LpProblem, LpMinimize, GUROBI
 
 
@@ -98,6 +98,8 @@ class linear_solver:
                 for time in range(self.N_TIME)
             ],
             cat="Integer",
+            lowBound=0,
+            upBound=500,
         )
         self.start_times_binary = LpVariable.dicts(
             "x",
@@ -265,10 +267,10 @@ class linear_solver:
                     # <= self.processing_times_integer[(machine, job, time)]
                     # )
                     # self.model += (
-                        # self.start_cdot_duration_helper_binary[(machine, job, time)]
-                        # >= self.processing_times_integer[(machine, job, time)]
-                        # - (1 - self.start_times_binary[(machine, job, time)])
-                        # * self.BIG_M_CAP
+                    # self.start_cdot_duration_helper_binary[(machine, job, time)]
+                    # >= self.processing_times_integer[(machine, job, time)]
+                    # - (1 - self.start_times_binary[(machine, job, time)])
+                    # * self.BIG_M_CAP
                     # )
 
         # Calculate processing durations
@@ -282,16 +284,11 @@ class linear_solver:
                 for time in range(self.N_TIME - 1):
                     right_side_term = sum(
                         [
-                            sum(
-                                [
-                                    self.skill_level_binary[
-                                        (machine, time, level, skill)
-                                    ]
-                                    * (current_job_term / level)
-                                    for level in self.skill_range()
-                                ]
-                            )
-                            for skill in range(self.N_SKILLS)
+                            self.skill_level_binary[
+                                (machine, time, level, current_job["skill_required"])
+                            ]
+                            * (current_job_term / level)
+                            for level in self.skill_range()
                         ]
                     )
 
@@ -587,7 +584,25 @@ class linear_solver:
                 if var.value() == 1
             ]
 
-            with open(self.RESULTS_DIR + "variable_values_debug.json", "w") as f:
+            results["start_cdot_duration_helper_binary"] = [
+                index
+                for index, var in self.start_cdot_duration_helper_binary.items()
+                if var.value() == 1
+            ]
+            results["start_cdot_skill_level_helper_binary"] = [
+                index
+                for index, var in self.start_cdot_skill_level_helper_binary.items()
+                if var.value() == 1
+            ]
+
+            filename = os.path.join(self.RESULTS_DIR, "variable_values_debug_1.json")
+            counter = 1
+            while os.path.exists(filename):
+                filename = os.path.join(
+                    self.RESULTS_DIR, f"variable_values_debug_{counter}.json"
+                )
+                counter += 1
+            with open(filename, "w") as f:
                 json.dump(results, f, indent=4)
 
             self.model.writeLP(self.RESULTS_DIR + "model.lp")
