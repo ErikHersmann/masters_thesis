@@ -67,18 +67,6 @@ class linear_solver:
             ],
             cat="Binary",
         )
-        self.skill_level_index_integer = LpVariable.dicts(
-            "c",
-            [
-                (machine, time, skill)
-                for machine in range(self.N_MACHINES)
-                for time in range(self.N_TIME)
-                for skill in range(self.N_SKILLS)
-            ],
-            cat="Integer",
-            lowBound=self.SKILL_LEVEL_LB,
-            upBound=self.SKILL_LEVEL_UB,
-        )
         self.skill_increased_helper_binary = LpVariable.dicts(
             "d",
             [
@@ -391,29 +379,6 @@ class linear_solver:
                         )
                     ) == 1
 
-        # Set y variables
-
-        for machine_idx in range(self.N_MACHINES):
-            for time_idx in range(self.N_TIME - 1):
-                for skill_idx in range(self.N_SKILLS):
-                    self.model += (
-                        sum(
-                            [
-                                level
-                                * self.skill_level_binary[
-                                    (
-                                        machine_idx,
-                                        time_idx + 1,
-                                        level,
-                                        skill_idx,
-                                    )
-                                ]
-                                for level in self.skill_range()
-                            ]
-                        )
-                        == self.skill_level_index_integer[(machine, time, skill_idx)]
-                    )
-
         ##################################################################
         # Constraints for the skill level index integer decision variable#
         ##################################################################
@@ -422,7 +387,7 @@ class linear_solver:
             alpha = self.machines[machine_idx]["alpha"]
             beta = self.machines[machine_idx]["beta"]
             l_cap = self.machines[machine_idx]["l_cap"]
-            for time_idx in range(self.N_TIME):
+            for time_idx in range(self.N_TIME-1):
                 for skill_idx in range(self.N_SKILLS):
                     right_side = sum(
                         [
@@ -460,23 +425,56 @@ class linear_solver:
                     )
                     # should be bigger or equal the new level or 0
                     self.model += (
-                        self.skill_level_index_integer[
-                            (machine_idx, time_idx, skill_idx)
-                        ]
+                        sum(
+                            [
+                                level
+                                * self.skill_level_binary[
+                                    (
+                                        machine_idx,
+                                        time_idx + 1,
+                                        level,
+                                        skill_idx,
+                                    )
+                                ]
+                                for level in self.skill_range()
+                            ]
+                        )
                         >= right_side
                     )
                     # should always be bigger or equal the old level
                     self.model += (
-                        self.skill_level_index_integer[
-                            (machine_idx, time_idx, skill_idx)
-                        ]
+                        sum(
+                            [
+                                level
+                                * self.skill_level_binary[
+                                    (
+                                        machine_idx,
+                                        time_idx + 1,
+                                        level,
+                                        skill_idx,
+                                    )
+                                ]
+                                for level in self.skill_range()
+                            ]
+                        )
                         >= old_level
                     )
                     # should be smaller or equal to the new level if d = 0
                     self.model += (
-                        self.skill_level_index_integer[
-                            (machine_idx, time_idx, skill_idx)
-                        ]
+                        sum(
+                            [
+                                level
+                                * self.skill_level_binary[
+                                    (
+                                        machine_idx,
+                                        time_idx + 1,
+                                        level,
+                                        skill_idx,
+                                    )
+                                ]
+                                for level in self.skill_range()
+                            ]
+                        )
                         <= self.BIG_M_MAX
                         * self.skill_increased_helper_binary[
                             (machine_idx, time_idx, skill_idx)
@@ -485,9 +483,20 @@ class linear_solver:
                     )
                     # should be smaller or equal to the old level if d = 1
                     self.model += (
-                        self.skill_level_index_integer[
-                            (machine_idx, time_idx, skill_idx)
-                        ]
+                        sum(
+                            [
+                                level
+                                * self.skill_level_binary[
+                                    (
+                                        machine_idx,
+                                        time_idx + 1,
+                                        level,
+                                        skill_idx,
+                                    )
+                                ]
+                                for level in self.skill_range()
+                            ]
+                        )
                         <= self.BIG_M_MAX
                         * (
                             1
@@ -586,4 +595,3 @@ class linear_solver:
                 json.dump(results, f, indent=4)
 
             self.model.writeLP(self.RESULTS_DIR + "model.lp")
-
