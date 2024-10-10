@@ -1,4 +1,3 @@
-import json
 from random import randint, choice, shuffle, seed
 from math import floor
 from algorithm_template import heuristic_template
@@ -15,9 +14,9 @@ class genetic_algorithm(heuristic_template):
         heuristic_template.__init__(self, machines, jobs_seminars)
         seed(7)
         self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
-        self.MAX_POP_SIZE = 50
-        self.MAX_EPOCH = 500
-        self.F_MUT_PROB = 0.05
+        self.MAX_POP_SIZE = 11
+        self.MAX_EPOCH = 1000
+        self.F_MUT_PROB = 0.10
         self._current_epoch = 1
         self._mut_treshold = 100 - floor(100 * self.F_MUT_PROB)
         self._best = [1000, None]
@@ -91,7 +90,7 @@ class genetic_algorithm(heuristic_template):
 
     def selection(self):
         """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one\\
-        Maybe keep the top k ones always regardless of of win or lose
+        Maybe keep just keep the top 10 without "dueling"\\
         """
         while True:
             shuffle(self._current_generation)

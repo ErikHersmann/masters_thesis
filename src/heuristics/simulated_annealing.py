@@ -1,5 +1,5 @@
 from algorithm_template import heuristic_template
-from random import random, choices, choice, shuffle, randint
+from random import random, choice, shuffle, randint
 from math import exp
 from copy import deepcopy
 

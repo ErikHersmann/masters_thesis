@@ -23,7 +23,7 @@ class linear_solver:
         self.seminars = None
         self.qualifications = None
         self.lateness = None
-        self.BIG_M = None
+        self.BIG_M_XOR = None
         self.N_SEMINARS = None
         self.PROCESSING_TIMES_UB = 100
 
@@ -50,7 +50,7 @@ class linear_solver:
                 {"beta": machine["growth_const"], "alpha": machine["growth_factor"]}
                 for machine in learning_curves
             ]
-        self.BIG_M = sum([job["base_duration"] for job in self.jobs])
+        self.BIG_M_XOR = sum([job["base_duration"] for job in self.jobs])
 
         # Calculate this from the worst skilled employee at the longest job instead
         self.BIG_P = 10000
@@ -103,8 +103,30 @@ class linear_solver:
             lowBound=self.SKILL_LEVEL_LB,
             upBound=self.SKILL_LEVEL_UB
         )
-        self.processing_times_integer = LpVariable.dicts(
+        self.skill_increased_helper_binary = LpVariable.dicts(
             "d",
+            [
+                (machine, time, skill)
+                for machine in range(self.N_MACHINES)
+                for time in range(self.N_TIME)
+                for skill in range(self.N_SKILLS)
+            ],
+            cat="Binary",
+        )
+        self.start_cdot_skill_level_helper_binary = LpVariable.dicts(
+            "e",
+            [
+                (machine, job, time, level, skill)
+                for machine in range(self.N_MACHINES)
+                for job in range(self.N_MACHINES)
+                for time in range(self.N_TIME)
+                for level in self.skill_range()
+                for skill in range(self.N_SKILLS)
+            ],
+            cat="Binary",
+        )
+        self.processing_times_integer = LpVariable.dicts(
+            "p",
             [
                 (machine, job, time)
                 for machine in range(self.N_MACHINES)
@@ -113,17 +135,7 @@ class linear_solver:
             ],
             cat="Integer",
             lowBound=1,
-            upBound=self.PROCESSING_TIMES_UB
-        )
-        self.skill_increased_helper_binary = LpVariable.dicts(
-            "q",
-            [
-                (machine, time, skill)
-                for machine in range(self.N_MACHINES)
-                for time in range(self.N_TIME)
-                for skill in range(self.N_SKILLS)
-            ],
-            cat="Binary",
+            upBound=self.PROCESSING_TIMES_UB,
         )
         self.start_times_binary = LpVariable.dicts(
             "x",
@@ -146,18 +158,7 @@ class linear_solver:
             ],
             cat="Binary",
         )
-        self.start_cdot_skill_level_helper_binary = LpVariable.dicts(
-            "z",
-            [
-                (machine, job, time, level, skill)
-                for machine in range(self.N_MACHINES)
-                for job in range(self.N_MACHINES)
-                for time in range(self.N_TIME)
-                for level in self.skill_range()
-                for skill in range(self.N_SKILLS)
-            ],
-            cat="Binary",
-        )
+
         self.N_DECISION_VARIABLES = (
             len(self.machine_one_job_constraint_helper_binary)
             + len(self.start_cdot_duration_helper_binary)
@@ -273,7 +274,7 @@ class linear_solver:
                     )
                     self.model += (
                         left_side
-                        - self.BIG_M
+                        - self.BIG_M_XOR
                         * (
                             1
                             - self.machine_one_job_constraint_helper_binary[
@@ -302,7 +303,7 @@ class linear_solver:
 
                     self.model += (
                         left_side_alt
-                        - self.BIG_M
+                        - self.BIG_M_XOR
                         * self.machine_one_job_constraint_helper_binary[
                             (job1, job2, machine)
                         ]
@@ -530,7 +531,7 @@ class linear_solver:
 
         with open(self.RESULTS_DIR + "variable_values_debug.json", "w") as f:
             json.dump(results, f, indent=4)
-            
+
         self.model.writeLP(self.RESULTS_DIR + "model.lp")
 
 

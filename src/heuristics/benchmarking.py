@@ -1,7 +1,6 @@
 import json, sys, os, time
 from simulated_annealing import simulated_annealing
 from genetic_algorithm import genetic_algorithm
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from data.gen_jobs_and_seminars import generate_jobs_seminars
 from data.gen_ran_machines import generate_machines
