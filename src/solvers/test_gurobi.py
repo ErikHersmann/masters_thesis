@@ -1,5 +1,5 @@
 from gurobi_solver import linear_solver
-from pulp import GUROBI
+from pulp import PulpSolverError
 import json
 
 if __name__ == "__main__":
@@ -12,4 +12,7 @@ if __name__ == "__main__":
 
     solver = linear_solver(machines, jobs_seminars, config_dict, True)
     solver.compile()
-    solver.solve(True)
+    try:
+        solver.solve(True)
+    except  PulpSolverError:
+        print(f"Make sure to switch to the the right python virtual environment")
