@@ -564,13 +564,13 @@ class linear_solver:
                 if var.value() == 1:
                     time = f"t_{time}"
                     machine = f"m_{machine}"
-                    if time not in results["skill_level_binary"]:
-                        results["skill_level_binary"][time] = {}
-                    if machine not in results["skill_level_binary"][time]:
-                        results["skill_level_binary"][time][machine] = [
+                    if time not in results["skill_level_binary_m_j_t"]:
+                        results["skill_level_binary_m_j_t"][time] = {}
+                    if machine not in results["skill_level_binary_m_j_t"][time]:
+                        results["skill_level_binary_m_j_t"][time][machine] = [
                             0 for _ in range(self.N_SKILLS)
                         ]
-                    results["skill_level_binary"][time][machine][skill] = level
+                    results["skill_level_binary_m_j_t"][time][machine][skill] = level
 
             results["processing_times_m_j_t"] = {
                 str(index): var.value()

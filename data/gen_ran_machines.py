@@ -17,7 +17,7 @@ def get_config_dict():
 
 def write_output_without_overwrite(data):
     appendix = 0
-    fname_base = "output/machineset_"
+    fname_base = f"output/m{len(data)}_"
     while True:
         cfname = fname_base + str(appendix) + ".json"
         if os.path.isfile(cfname):
@@ -29,8 +29,7 @@ def write_output_without_overwrite(data):
             break
 
 
-def generate_machines(N_MACHINES):
-    config_dict = get_config_dict()
+def generate_machines(N_MACHINES, config_dict):
     machines = []
     max_growth = config_dict["learning_curves_config"]["maximum_growth"]
     for idx in range(N_MACHINES):
@@ -59,4 +58,4 @@ if __name__ == "__main__":
         N_MACHINES = 3
     else:
         N_MACHINES = int(argv[1])
-    write_output_without_overwrite(generate_machines(N_MACHINES))
+    write_output_without_overwrite(generate_machines(N_MACHINES, get_config_dict()))

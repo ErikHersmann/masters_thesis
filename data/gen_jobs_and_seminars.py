@@ -14,9 +14,10 @@ def get_config_dict():
     return config_dict
 
 
-def write_output_without_overwrite(data):
+def write_output_without_overwrite(data, index_tuple):
     appendix = 0
-    fname_base = "output/jobset_"
+    n_job, n_sem = index_tuple
+    fname_base = f"output/j{n_job}s{n_sem}_"
     while True:
         cfname = fname_base + str(appendix) + ".json"
         if os.path.isfile(cfname):
@@ -28,8 +29,7 @@ def write_output_without_overwrite(data):
             print(f"wrote to {cfname}")
             break
 
-def generate_jobs_seminars(NUM_JOBS=5):
-    config_dict = get_config_dict()
+def generate_jobs_seminars(NUM_JOBS, config_dict):
     output = []
     first_letter = ord("a")
     last_letter = ord("z")
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     try:
         NUM_JOBS = int(argv[1])
     except:
-        NUM_JOBS = 3
+        NUM_JOBS = 5
         print(f"no job count specified continuing with default {NUM_JOBS}")
-    output = generate_jobs_seminars(NUM_JOBS)
-    write_output_without_overwrite(output)
+    output = generate_jobs_seminars(NUM_JOBS, get_config_dict())
+    write_output_without_overwrite(output, (NUM_JOBS, len(output)-NUM_JOBS))

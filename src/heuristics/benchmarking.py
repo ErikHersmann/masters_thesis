@@ -19,8 +19,10 @@ if __name__ == "__main__":
         N_MACHINES, N_JOBS = map(int, sys.argv[1:])
     else:
         N_MACHINES, N_JOBS = 5, 3
-    machines = generate_machines(N_MACHINES)
-    jobs = generate_jobs_seminars(N_JOBS)
+    with open("../../resources/config.json", "r") as f:
+        config_dict = json.load(f)
+    machines = generate_machines(N_MACHINES, config_dict)
+    jobs = generate_jobs_seminars(N_JOBS, config_dict)
     N_JOBS = sum([1 for job in jobs if job["type"] == "job"])
     N_SEMINARS = sum([1 for job in jobs if job["type"] == "seminar"])
     # setup_tuple = setup()
@@ -28,7 +30,7 @@ if __name__ == "__main__":
     print(f"N_MACHINES {N_MACHINES} N_JOBS {N_JOBS} N_SEMINARS {N_SEMINARS}")
     print(f"Genetic algorithm")
     start = time.time_ns()
-    algo = genetic_algorithm(*setup_tuple)
+    algo = genetic_algorithm(*setup_tuple, config_dict)
     while algo._current_epoch < algo.MAX_EPOCH:
         algo.recombination()
         algo.selection()
@@ -37,7 +39,7 @@ if __name__ == "__main__":
 
     print(f"Simulated annealing")
     start = time.time_ns()
-    algo2 = simulated_annealing(*setup_tuple)
+    algo2 = simulated_annealing(*setup_tuple, config_dict)
     while algo2.k < algo2.K_MAX:
         algo2.step()
     finish_2 = (time.time_ns() - start) / 10**9
