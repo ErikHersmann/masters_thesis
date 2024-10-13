@@ -1,4 +1,5 @@
 import itertools, json
+from sys import argv
 
 
 def enumerate_all_solutions(N_JOBS, N_SEMINARS, N_MACHINES):
@@ -39,17 +40,21 @@ def enumerate_all_solutions(N_JOBS, N_SEMINARS, N_MACHINES):
 
 
 if __name__ == "__main__":
-    N_JOBS = 5
-    N_MACHINES = 2
-    N_SEMINARS = 1
+    if len(argv) >= 4:
+        N_JOBS, N_SEMINARS, N_MACHINES = (int(x) for x in argv[1:5])
+    else:
+        N_JOBS = 5
+        N_MACHINES = 2
+        N_SEMINARS = 1
     result = enumerate_all_solutions(
         N_JOBS=N_JOBS, N_SEMINARS=N_SEMINARS, N_MACHINES=N_MACHINES
     )
+    fname = f"results/j{N_JOBS}s{N_SEMINARS}m{N_MACHINES}_enum.json"
     with open(
-        f"results/j{N_JOBS}_s{N_SEMINARS}_m{N_MACHINES}_enumeration.json", "w"
+        fname, "w"
     ) as f:
         json.dump(
             result,
             f,
         )
-    print(f"Solution count {len(result)}")
+    print(f"Solution count {len(result)} ({fname})")

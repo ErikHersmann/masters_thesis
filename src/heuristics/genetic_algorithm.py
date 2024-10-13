@@ -10,8 +10,8 @@ class genetic_algorithm(heuristic_template):
     Selection -> next parent generation
     """
 
-    def __init__(self, machines, jobs_seminars) -> None:
-        heuristic_template.__init__(self, machines, jobs_seminars)
+    def __init__(self, machines, jobs_seminars, config_dict) -> None:
+        heuristic_template.__init__(self, machines, jobs_seminars, config_dict)
         seed(7)
         self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
         self.MAX_POP_SIZE = 11
@@ -105,7 +105,6 @@ class genetic_algorithm(heuristic_template):
                 fitness1 = self.lateness_calculator.calculate(
                     self._current_generation[idx]
                 )
-                # print(fitness1, fitness2)
                 if fitness1 <= fitness2:
                     next_generation.append(self._current_generation[idx])
                     if fitness1 < self._best[0]:

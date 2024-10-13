@@ -7,8 +7,8 @@ from copy import deepcopy
 class simulated_annealing(heuristic_template):
     """Acceptance prob function still a bit wonky"""
 
-    def __init__(self, machines, jobs_seminars) -> None:
-        heuristic_template.__init__(self, machines, jobs_seminars)
+    def __init__(self, machines, jobs_seminars, config_dict) -> None:
+        heuristic_template.__init__(self, machines, jobs_seminars, config_dict)
         self._current_solution = None
         self._temperature = None
         self.starting_temperature = 100

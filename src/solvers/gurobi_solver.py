@@ -146,7 +146,9 @@ class linear_solver:
 
         # Lateness is the sum of differences between end time - Deadline for all jobs
 
-        lb_lateness = -max([job["deadline"] for job in self.jobs_seminars])
+        lb_lateness = -max(
+            [job["deadline"] for job in self.jobs_seminars if job["type"] == "job"]
+        )
         print(
             f"lateness lower bound {lb_lateness}\nlateness upper bound {self.BIG_M_XOR+1}"
         )
@@ -545,19 +547,27 @@ class linear_solver:
                 displayInterval=5,
             )
         )
+        #############################
+        # EXTRACTING VARIABLE VALUES#
+        #############################
         self.lateness = self.lateness.varValue
+        results = {}
+        results["lateness"] = self.lateness
+
+        results["start_times_binary"] = [
+            index for index, var in self.start_times_binary.items() if var.value() == 1
+        ]
+        results["order_on_machines"] = [[] for _ in range(self.N_MACHINES)]
+        for machine, job, time in results["start_times_binary"]:
+            results["order_on_machines"][machine].append((job, time))
+        results["solution"] = [[] for _ in range(self.N_MACHINES)]
+        for machine_idx, machine in enumerate(results["order_on_machines"]):
+            results["solution"][machine_idx] = [
+                job_time_tuple[0]
+                for job_time_tuple in sorted(machine, key=lambda x: x[1])
+            ]
 
         if write_verbose_output:
-            #############################
-            # EXTRACTING VARIABLE VALUES#
-            #############################
-            results = {}
-
-            results["start_times_binary"] = [
-                index
-                for index, var in self.start_times_binary.items()
-                if var.value() == 1
-            ]
 
             results["skill_level_binary_m_j_t"] = {}
             for (machine, time, level, skill), var in self.skill_level_binary.items():
@@ -610,3 +620,4 @@ class linear_solver:
                 json.dump(results, f, indent=4)
 
             self.model.writeLP(self.RESULTS_DIR + "model.lp")
+        return (results["lateness"], results["solution"])

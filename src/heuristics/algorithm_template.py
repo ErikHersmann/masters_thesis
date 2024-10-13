@@ -6,7 +6,7 @@ class heuristic_template():
         self.N_JOBS = sum([1 for x in jobs_seminars if x["type"] == "job"])
         self.N_SEMINARS = sum([1 for x in jobs_seminars if x["type"] == "seminar"])
         self.N_MACHINES = len(machines)
-        self.lateness_calculator = calculate_lateness(machines, jobs_seminars)
+        self.lateness_calculator = calculate_lateness(machines, jobs_seminars, self.config)
     
     def clean_up_solution(self, solution):
         """Not in place clean up of unncessary seminars at the end of a machine
