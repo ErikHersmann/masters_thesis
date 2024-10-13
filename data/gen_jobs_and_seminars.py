@@ -25,6 +25,7 @@ def write_output_without_overwrite(data):
         else:
             with open(cfname, "a") as f:
                 json.dump(data, f)
+            print(f"wrote to {cfname}")
             break
 
 def generate_jobs_seminars(NUM_JOBS=5):

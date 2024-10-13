@@ -490,13 +490,23 @@ class linear_solver:
                         <= self.start_times_binary[(machine_idx, job_idx, time_idx)]
                     )
                     for level in self.skill_range():
-                      #  for skill_idx in range(self.N_SKILLS):
                         self.model += (
                             self.start_cdot_skill_level_helper_binary[
-                                (machine_idx, job_idx, time_idx, level, self.jobs_seminars[job_idx]["skill_required"])
+                                (
+                                    machine_idx,
+                                    job_idx,
+                                    time_idx,
+                                    level,
+                                    self.jobs_seminars[job_idx]["skill_required"],
+                                )
                             ]
                             <= self.skill_level_binary[
-                                (machine_idx, time_idx, level, self.jobs_seminars[job_idx]["skill_required"])
+                                (
+                                    machine_idx,
+                                    time_idx,
+                                    level,
+                                    self.jobs_seminars[job_idx]["skill_required"],
+                                )
                             ]
                         )
                         self.model += (
@@ -509,9 +519,7 @@ class linear_solver:
                                     self.jobs_seminars[job_idx]["skill_required"],
                                 )
                             ]
-                            >= self.start_times_binary[
-                                (machine_idx, job_idx, time_idx)
-                            ]
+                            >= self.start_times_binary[(machine_idx, job_idx, time_idx)]
                             + self.skill_level_binary[
                                 (
                                     machine_idx,
@@ -551,7 +559,7 @@ class linear_solver:
                 if var.value() == 1
             ]
 
-            results["skill_level_binary"] = {}
+            results["skill_level_binary_m_j_t"] = {}
             for (machine, time, level, skill), var in self.skill_level_binary.items():
                 if var.value() == 1:
                     time = f"t_{time}"
@@ -564,7 +572,7 @@ class linear_solver:
                         ]
                     results["skill_level_binary"][time][machine][skill] = level
 
-            results["processing_times"] = {
+            results["processing_times_m_j_t"] = {
                 str(index): var.value()
                 for index, var in self.processing_times_integer.items()
             }
