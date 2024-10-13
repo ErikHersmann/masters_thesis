@@ -3,9 +3,10 @@ from copy import deepcopy
 
 
 class calculate_lateness:
-    def __init__(self, machines, jobs_seminars, config_dict) -> None:
+    def __init__(self, machines, jobs_seminars, config_dict, debug_mode=False) -> None:
         self.machines = machines
         self.jobs_seminars = jobs_seminars
+        self.debug_mode = debug_mode
         self.SKILL_LIMIT_UB = config_dict["skill_config"]["max_machine_skill"]
 
     def calculate(self, order):
@@ -22,6 +23,8 @@ class calculate_lateness:
         order = [[self.jobs_seminars[idx] for idx in machine] for machine in order]
         current_machines = deepcopy(self.machines)
         lateness = None
+        if self.debug_mode:
+            debug_times = [[] for _ in range(len(order))]
 
         ###########
         # MACHINES#
@@ -56,7 +59,8 @@ class calculate_lateness:
 
                 else:
                     current_processing_duration = current_job["base_duration"]
-
+                if self.debug_mode:
+                    debug_times[machine_idx].append({"job": current_job['index'] , "start": current_time, "finish": current_time+current_processing_duration})
                 current_machines[machine_idx]["skills"][current_job["skill_required"]] = min(
                     (
                         current_machines[machine_idx]["beta"]
@@ -66,6 +70,9 @@ class calculate_lateness:
                     self.SKILL_LIMIT_UB,
                 )
                 current_time += current_processing_duration
+        if self.debug_mode:
+            for machine in debug_times:
+                print(machine)
         return lateness
 
 
