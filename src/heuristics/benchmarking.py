@@ -11,12 +11,13 @@ from solvers.gurobi_solver import linear_solver
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        N_MACHINES, N_JOBS = map(int, sys.argv[1:])
+    if len(sys.argv) == 4:
+        N_JOBS, N_SEMINARS, N_MACHINES = map(int, sys.argv[1:])
     else:
         # Set N_SEMINARS to None if u want 6
         N_JOBS, N_SEMINARS, N_MACHINES = 4, 2, 2
-    small_instance = True
+    small_instance = all([N_SEMINARS <= 2, N_JOBS <= 5, N_MACHINES <= 3])
+    small_instance = False
     ########
     # SETUP#
     ########
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     N_JOBS = sum([1 for job in jobs if job["type"] == "job"])
     N_SEMINARS = sum([1 for job in jobs if job["type"] == "seminar"])
     setup_tuple = (machines, jobs)
-    print(f"N_MACHINES {N_MACHINES} N_JOBS {N_JOBS} N_SEMINARS {N_SEMINARS}")
+    print(f"N_JOBS {N_JOBS} N_SEMINARS {N_SEMINARS} N_MACHINES {N_MACHINES}")
 
     ####################
     # GENETIC ALGORITHM#
@@ -56,13 +57,13 @@ if __name__ == "__main__":
     # FULL ENUMERATION#
     ###################
     solutions_path = f"results/j{N_JOBS}s{N_SEMINARS}m{N_MACHINES}_enum.json"
-    if os.path.isfile(solutions_path) and small_instance:
+    if os.path.isfile(solutions_path):
         print(f"Full enumeration")
         start = time.time_ns()
         with open(solutions_path, "r") as f:
             solutions = json.load(f)
         calculator = calculate_lateness(machines, jobs, config_dict)
-        algo3_best = [0, []]
+        algo3_best = [1000, []]
         for row_idx, solution in enumerate(solutions):
             lateness = calculator.calculate(solution["solution"])
             solutions[row_idx]["lateness"] = lateness
@@ -71,13 +72,16 @@ if __name__ == "__main__":
             elif lateness == algo3_best[0]:
                 algo3_best[1].append(solution)
         finish_3 = (time.time_ns() - start) / 10**9
-        print(algo3_best[0])
+        print([algo3_best[0], algo3_best[1][0]['solution'], len(algo3_best[1])])
         with open(solutions_path, "w") as f:
             json.dump(solutions, f)
+        opt_solution_count = len(algo3_best[1])
     else:
+        print(f"No enumeration file found")
         algo3_best = [None, None]
         finish_3 = None
         solutions = []
+        opt_solution_count = None
 
     #########
     # GUROBI#
@@ -95,6 +99,7 @@ if __name__ == "__main__":
         finish_4 = (time.time_ns() - start) / 10**9
         gurobi_calculated_lateness = calculator.calculate(gurobi_solution)
     else:
+        print(f"Model size too large for MIP solver")
         gurobi_lateness = None
         gurobi_calculated_lateness = None
         gurobi_solution = None
@@ -123,7 +128,7 @@ if __name__ == "__main__":
                 "optimal_solutions": algo3_best[1],
                 "runtime_seconds": finish_3,
                 "solution_count": len(solutions),
-                "optimal_solution_count": len(algo3_best[1]),
+                "optimal_solution_count": opt_solution_count,
             },
             "gurobi": {
                 "lateness_model": gurobi_lateness,
@@ -137,4 +142,4 @@ if __name__ == "__main__":
     }
     with open(f"results/{epoch_time}_benchmark.json", "w") as f:
         json.dump(results, f)
-    print(f"results at {epoch_time}_benchmark.json")
+    print(f"Saved as {epoch_time}_benchmark.json")

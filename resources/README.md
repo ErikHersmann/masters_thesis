@@ -1,4 +1,4 @@
-# Notes
+# Notes (Alt key for menu bar)
 ## Notes from first meeting
 - How is a solution being encoded (Vector of jobs for each machine (the order))
 	- Issues with that: Calculate objective function value from a solution is "non-trivial"

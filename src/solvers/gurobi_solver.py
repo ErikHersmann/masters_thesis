@@ -1,6 +1,8 @@
+from collections import defaultdict
 import json, os
 from pulp import LpVariable, LpProblem, LpMinimize, GUROBI
 from math import ceil
+from toposort import toposort, toposort_flatten
 
 
 class linear_solver:
@@ -13,7 +15,7 @@ class linear_solver:
         self.SKILL_LEVEL_UB = self.config_dict["skill_config"]["max_machine_skill"]
         self.SKILLS = self.config_dict["skills"]
         self.N_SKILLS = len(self.SKILLS)
-        self.ALMOST_ONE = 0.999999
+        self.ALMOST_ONE = 0.9999
         self.machines = machines
         self.jobs_seminars = jobs_seminars
         worst_skills = [
@@ -554,11 +556,11 @@ class linear_solver:
         results = {}
         results["lateness"] = self.lateness
 
-        results["start_times_binary"] = [
+        results["start_times_binary_m_j_t"] = [
             index for index, var in self.start_times_binary.items() if var.value() == 1
         ]
         results["order_on_machines"] = [[] for _ in range(self.N_MACHINES)]
-        for machine, job, time in results["start_times_binary"]:
+        for machine, job, time in results["start_times_binary_m_j_t"]:
             results["order_on_machines"][machine].append((job, time))
         results["solution"] = [[] for _ in range(self.N_MACHINES)]
         for machine_idx, machine in enumerate(results["order_on_machines"]):
@@ -587,21 +589,53 @@ class linear_solver:
                 for index, var in self.processing_times_integer.items()
             }
 
+            ###################
+            # PRECEDENCE ORDER#
+            ###################
             results["machine_one_job_constraint_helper_binary"] = {
-                str(index): (
-                    f"m_{index[2]}    j_{index[0]} -> j_{index[1]}"
-                    if var.value() == 1
-                    else f"m_{index[2]}    j_{index[1]} -> j_{index[0]}"
-                )
-                for index, var in self.machine_one_job_constraint_helper_binary.items()
+                f"m_{m_idx}": {} for m_idx in range(self.N_MACHINES)
             }
+            for index, var in self.machine_one_job_constraint_helper_binary.items():
+                j1, j2, machine = index
+                machine = f"m_{machine}"
+                if var.value() == 1:
+                    results["machine_one_job_constraint_helper_binary"][machine][
+                        str(index)
+                    ] = f"{j1} precedes {j2}"
+            ######################
+            # TOPOLOGICAL SORTING#
+            ######################
+            results["machine_one_job_constraint_helper_binary_pprint"] = {}
+            precedence_map = {
+                f"m_{m_idx}": {
+                    job_idx: [] for job_idx in range(self.N_JOBS_AND_SEMINARS)
+                }
+                for m_idx in range(self.N_MACHINES)
+            }
+            for index, var in self.machine_one_job_constraint_helper_binary.items():
+                machine = f"m_{index[2]}"
+                if var.value() == 1:
+                    # j_{index[0]} precedes j_{index[1]}
+                    precedence_map[machine][index[1]].append(index[0])
+
+            # For each machine, determine the job precedence order
+            for machine, precedences in precedence_map.items():
+
+                # Store the final order in the results dict
+                results["machine_one_job_constraint_helper_binary_pprint"][machine] = (
+                    toposort_flatten(precedences)
+                )
+
+            ###########
+            # BINARIES#
+            ###########
 
             results["start_cdot_duration_helper_binary"] = {
                 str(index): var.value()
                 for index, var in self.start_cdot_duration_helper_binary.items()
                 if var.value() != 0
             }
-            results["start_cdot_skill_level_helper_binary"] = [
+            results["start_cdot_skill_level_helper_binary_m_j_t_l_w"] = [
                 index
                 for index, var in self.start_cdot_skill_level_helper_binary.items()
                 if var.value() == 1
