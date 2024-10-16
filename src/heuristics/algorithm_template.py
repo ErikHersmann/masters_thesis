@@ -17,11 +17,17 @@ class heuristic_template():
         Returns:
             List: Cleaned up solution
         """        
-        c_order = [[] for _ in solution]
-        for m_idx, m in enumerate(solution):
-            last_job_idx = None
-            for j_idx, j in enumerate(m):
-                if j < self.N_JOBS:
-                    last_job_idx = j_idx
-            c_order[m_idx] = solution[m_idx][:last_job_idx+1]
-        return c_order
+        for m_idx in range(len(solution)):
+            cur = self.N_JOBS
+            while cur >= self.N_JOBS and len(solution[m_idx]) > 0:
+                cur = solution[m_idx].pop()
+            if cur < self.N_JOBS:
+                solution[m_idx].append(cur)
+        # c_order = [[] for _ in solution]
+        # for m_idx, m in enumerate(solution):
+        #     last_job_idx = None
+        #     for j_idx, j in enumerate(m):
+        #         if j < self.N_JOBS:
+        #             last_job_idx = j_idx
+        #     c_order[m_idx] = solution[m_idx][:last_job_idx+1]
+        # return c_order

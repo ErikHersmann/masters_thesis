@@ -1,4 +1,4 @@
-from math import ceil
+from math import ceil,floor
 from copy import deepcopy
 
 
@@ -9,7 +9,7 @@ class calculate_lateness:
         self.debug_mode = debug_mode
         self.SKILL_LIMIT_UB = config_dict["skill_config"]["max_machine_skill"]
 
-    def calculate(self, order):
+    def calculate(self, order, no_floats=False):
         """Given a List of Lists of orders of jobs (with details of each job/seminar), and the machines at t=0
         Calculate the lateness of the given solution (order vectors)
 
@@ -55,7 +55,7 @@ class calculate_lateness:
                     if not lateness or current_lateness_term > lateness:
                         lateness = current_lateness_term
 
-                   #  print(f"t {current_time} machine {machine_idx} lateness {lateness} others {current_time}+{current_processing_duration}-{current_job['deadline']}")
+                #  print(f"t {current_time} machine {machine_idx} lateness {lateness} others {current_time}+{current_processing_duration}-{current_job['deadline']}")
 
                 else:
                     current_processing_duration = current_job["base_duration"]
@@ -69,11 +69,16 @@ class calculate_lateness:
                     ),
                     self.SKILL_LIMIT_UB,
                 )
+                if no_floats:
+                    current_machines[machine_idx]["skills"][
+                        current_job["skill_required"]
+                    ] = floor(
+                        current_machines[machine_idx]["skills"][
+                            current_job["skill_required"]
+                        ]
+                    )
                 current_time += current_processing_duration
         if self.debug_mode:
             for machine in debug_times:
                 print(machine)
         return lateness
-
-
-

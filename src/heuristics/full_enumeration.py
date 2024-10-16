@@ -36,6 +36,15 @@ def enumerate_all_solutions(N_JOBS, N_SEMINARS, N_MACHINES):
                 output.append({"idx": idx, "solution": solution})
                 idx += 1
 
+    for solution in output:
+        for m_idx in range(len(solution['solution'])):
+            if (
+                len(solution["solution"][m_idx]) > 0
+                and solution["solution"][m_idx][-1] >= N_JOBS
+            ):
+                output.remove(solution)
+                break
+
     return output
 
 

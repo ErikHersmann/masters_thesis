@@ -10,7 +10,7 @@ if __name__ == "__main__":
     # with open("../../data/output/m2_0.json", "r") as f:
     # machines = json.load(f)
     with open(
-        "../heuristics/results/1728799116_benchmark.json",
+        "../heuristics/results/1729047986_benchmark.json",
         "r",
     ) as f:
         benchmarking_reference = json.load(f)

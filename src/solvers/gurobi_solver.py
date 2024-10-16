@@ -142,11 +142,10 @@ class linear_solver:
     def compile(self):
         """Adds the constraints to the model"""
         self.pre_compile()
-        #####################
-        # OBJECTIVE FUNCTION#
-        #####################
 
-        # Lateness is the sum of differences between end time - Deadline for all jobs
+        ################################
+        # OBJECTIVE FUNCTION (LATENESS)#
+        ################################
 
         lb_lateness = -max(
             [job["deadline"] for job in self.jobs_seminars if job["type"] == "job"]
@@ -207,65 +206,71 @@ class linear_solver:
                     <= 1
                 )
 
+        # Despite commenting this it still doesnt schedule everything at 0 why ?
         # Machines must have at most one job on them for any given time t
 
-        for job1 in range(self.N_JOBS_AND_SEMINARS):
-            for job2 in range(self.N_JOBS_AND_SEMINARS):
-                if job1 == job2:
-                    continue
-                for machine in range(self.N_MACHINES):
-                    left_side = sum(
-                        [
-                            self.start_times_binary[(machine, job1, time)] * time
-                            + self.start_cdot_duration_helper_binary[
-                                (machine, job1, time)
-                            ]
-                            for time in range(self.N_TIME)
-                        ]
-                    )
-                    right_side = sum(
-                        [
-                            self.start_times_binary[(machine, job2, time)] * time
-                            for time in range(self.N_TIME)
-                        ]
-                    )
-                    self.model += (
-                        left_side
-                        - self.BIG_M_XOR
-                        * (
-                            1
-                            - self.machine_one_job_constraint_helper_binary[
-                                (job1, job2, machine)
-                            ]
-                        )
-                        <= right_side
-                    )
-                    # XOR
+        # for job1 in range(self.N_JOBS_AND_SEMINARS):
+        #     for job2 in range(self.N_JOBS_AND_SEMINARS):
+        #         if job1 == job2:
+        #             continue
+        #         for machine in range(self.N_MACHINES):
+        #             left_side = sum(
+        #                 [
+        #                     self.start_times_binary[(machine, job1, time)] * time
+        #                     + self.start_cdot_duration_helper_binary[
+        #                         (machine, job1, time)
+        #                     ]
+        #                     for time in range(self.N_TIME)
+        #                 ]
+        #             )
+        #             right_side = sum(
+        #                 [
+        #                     self.start_times_binary[(machine, job2, time)] * time
+        #                     for time in range(self.N_TIME)
+        #                 ]
+        #             )
+        #             self.model += (
+        #                 left_side
+        #                 - (
+        #                     self.BIG_M_XOR
+        #                     * (
+        #                         1
+        #                         - self.machine_one_job_constraint_helper_binary[
+        #                             (job1, job2, machine)
+        #                         ]
+        #                     )
+        #                 )
+        #                 <= right_side
+        #             )
+        #             ################
+        #             # EXCLUSIVE OR #
+        #             ################
+        #             left_side_alt = sum(
+        #                 [
+        #                     self.start_times_binary[(machine, job2, time)] * time
+        #                     + self.start_cdot_duration_helper_binary[
+        #                         (machine, job2, time)
+        #                     ]
+        #                     for time in range(self.N_TIME)
+        #                 ]
+        #             )
+        #             right_side_alt = sum(
+        #                 [
+        #                     self.start_times_binary[(machine, job1, time)] * time
+        #                     for time in range(self.N_TIME)
+        #                 ]
+        #             )
 
-                    left_side_alt = sum(
-                        [
-                            self.start_times_binary[(machine, job2, time)] * time
-                            + self.start_cdot_duration_helper_binary[
-                                (machine, job2, time)
-                            ]
-                            for time in range(self.N_TIME)
-                        ]
-                    )
-                    right_side_alt = sum(
-                        [
-                            self.start_times_binary[(machine, job1, time)] * time
-                            for time in range(self.N_TIME)
-                        ]
-                    )
-
-                    self.model += (
-                        left_side_alt
-                        - self.BIG_M_XOR
-                        * self.machine_one_job_constraint_helper_binary[
-                            (job1, job2, machine)
-                        ]
-                        <= right_side_alt
-                    )
+        #             self.model += (
+        #                 left_side_alt
+        #                 - (
+        #                     self.BIG_M_XOR
+        #                     * self.machine_one_job_constraint_helper_binary[
+        #                         (job1, job2, machine)
+        #                     ]
+        #                 )
+        #                 <= right_side_alt
+        #             )
 
         # Helper variable that models the multiplication constraints
 
@@ -535,7 +540,7 @@ class linear_solver:
                             - 1
                         )
 
-    def solve(self, write_verbose_output=False):
+    def solve(self, write_verbose_output=False, terminal_output=True):
         """Solves the model with GUROBI"""
         ######################
         # SOLVING WITH GUROBI#
@@ -547,6 +552,7 @@ class linear_solver:
                 logPath=self.RESULTS_DIR + "gurobi_log.txt",
                 timeLimit=6000,
                 displayInterval=5,
+                msg=terminal_output,
             )
         )
         #############################

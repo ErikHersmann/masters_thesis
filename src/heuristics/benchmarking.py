@@ -1,7 +1,6 @@
 import json, sys, os, time
 from simulated_annealing import simulated_annealing
 from genetic_algorithm import genetic_algorithm
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from data.gen_jobs_and_seminars import generate_jobs_seminars
@@ -17,7 +16,7 @@ if __name__ == "__main__":
         # Set N_SEMINARS to None if u want 6
         N_JOBS, N_SEMINARS, N_MACHINES = 4, 2, 2
     small_instance = all([N_SEMINARS <= 2, N_JOBS <= 5, N_MACHINES <= 3])
-    small_instance = False
+    # small_instance = False
     ########
     # SETUP#
     ########
@@ -95,7 +94,8 @@ if __name__ == "__main__":
             verbose=False,
         )
         solver.compile()
-        gurobi_lateness, gurobi_solution = solver.solve()
+        gurobi_lateness, gurobi_solution = solver.solve(write_verbose_output=True, terminal_output=False)
+        print(f"Gurobi\n{[int(gurobi_lateness), gurobi_solution]}")
         finish_4 = (time.time_ns() - start) / 10**9
         gurobi_calculated_lateness = calculator.calculate(gurobi_solution)
     else:
