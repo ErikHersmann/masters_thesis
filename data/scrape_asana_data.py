@@ -4,7 +4,7 @@ from pprint import pprint
 from pathlib import Path
 
 
-with open(str(Path(__file__).parent.parent.absolute().as_posix()) + "/resources/env.json") as f:
+with open(str(Path(__file__).parent.parent.absolute().as_posix()) + "/resources/config.json") as f:
     environment = json.load(f)
 configuration = asana.Configuration()
 configuration.access_token = environment["access_token"]

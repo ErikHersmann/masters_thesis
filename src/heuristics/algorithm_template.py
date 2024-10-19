@@ -5,6 +5,8 @@ class heuristic_template():
         self.config = config_dict
         self.N_JOBS = sum([1 for x in jobs_seminars if x["type"] == "job"])
         self.N_SEMINARS = sum([1 for x in jobs_seminars if x["type"] == "seminar"])
+        # ご注意ください!
+        self.N_JOBS_SEMINARS = self.N_JOBS + self.N_SEMINARS
         self.N_MACHINES = len(machines)
         self.lateness_calculator = calculate_lateness(machines, jobs_seminars, self.config)
     

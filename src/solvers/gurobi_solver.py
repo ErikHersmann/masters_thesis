@@ -209,68 +209,68 @@ class linear_solver:
         # Despite commenting this it still doesnt schedule everything at 0 why ?
         # Machines must have at most one job on them for any given time t
 
-        # for job1 in range(self.N_JOBS_AND_SEMINARS):
-        #     for job2 in range(self.N_JOBS_AND_SEMINARS):
-        #         if job1 == job2:
-        #             continue
-        #         for machine in range(self.N_MACHINES):
-        #             left_side = sum(
-        #                 [
-        #                     self.start_times_binary[(machine, job1, time)] * time
-        #                     + self.start_cdot_duration_helper_binary[
-        #                         (machine, job1, time)
-        #                     ]
-        #                     for time in range(self.N_TIME)
-        #                 ]
-        #             )
-        #             right_side = sum(
-        #                 [
-        #                     self.start_times_binary[(machine, job2, time)] * time
-        #                     for time in range(self.N_TIME)
-        #                 ]
-        #             )
-        #             self.model += (
-        #                 left_side
-        #                 - (
-        #                     self.BIG_M_XOR
-        #                     * (
-        #                         1
-        #                         - self.machine_one_job_constraint_helper_binary[
-        #                             (job1, job2, machine)
-        #                         ]
-        #                     )
-        #                 )
-        #                 <= right_side
-        #             )
-        #             ################
-        #             # EXCLUSIVE OR #
-        #             ################
-        #             left_side_alt = sum(
-        #                 [
-        #                     self.start_times_binary[(machine, job2, time)] * time
-        #                     + self.start_cdot_duration_helper_binary[
-        #                         (machine, job2, time)
-        #                     ]
-        #                     for time in range(self.N_TIME)
-        #                 ]
-        #             )
-        #             right_side_alt = sum(
-        #                 [
-        #                     self.start_times_binary[(machine, job1, time)] * time
-        #                     for time in range(self.N_TIME)
-        #                 ]
-        #             )
+        for job1 in range(self.N_JOBS_AND_SEMINARS):
+            for job2 in range(self.N_JOBS_AND_SEMINARS):
+                if job1 == job2:
+                    continue
+                for machine in range(self.N_MACHINES):
+                    left_side = sum(
+                        [
+                            self.start_times_binary[(machine, job1, time)] * time
+                            + self.start_cdot_duration_helper_binary[
+                                (machine, job1, time)
+                            ]
+                            for time in range(self.N_TIME)
+                        ]
+                    )
+                    right_side = sum(
+                        [
+                            self.start_times_binary[(machine, job2, time)] * time
+                            for time in range(self.N_TIME)
+                        ]
+                    )
+                    self.model += (
+                        left_side
+                        - (
+                            self.BIG_M_XOR
+                            * (
+                                1
+                                - self.machine_one_job_constraint_helper_binary[
+                                    (job1, job2, machine)
+                                ]
+                            )
+                        )
+                        <= right_side
+                    )
+                    ################
+                    # EXCLUSIVE OR #
+                    ################
+                    left_side_alt = sum(
+                        [
+                            self.start_times_binary[(machine, job2, time)] * time
+                            + self.start_cdot_duration_helper_binary[
+                                (machine, job2, time)
+                            ]
+                            for time in range(self.N_TIME)
+                        ]
+                    )
+                    right_side_alt = sum(
+                        [
+                            self.start_times_binary[(machine, job1, time)] * time
+                            for time in range(self.N_TIME)
+                        ]
+                    )
 
-        #             self.model += (
-        #                 left_side_alt
-        #                 - (
-        #                     self.BIG_M_XOR
-        #                     * self.machine_one_job_constraint_helper_binary[
-        #                         (job1, job2, machine)
-        #                     ]
-        #                 )
-        #                 <= right_side_alt
-        #             )
+                    self.model += (
+                        left_side_alt
+                        - (
+                            self.BIG_M_XOR
+                            * self.machine_one_job_constraint_helper_binary[
+                                (job1, job2, machine)
+                            ]
+                        )
+                        <= right_side_alt
+                    )
 
         # Helper variable that models the multiplication constraints
 
