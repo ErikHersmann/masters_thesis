@@ -56,4 +56,8 @@ $M^{\text{r}}$ instead of $R$
 - Conclusion: Describe instances and gneeration of those from company data
 - Direction for future research: Sync start times of seminars
 
-
+## Notes before the third meeting
+- Generate machines from memory
+- Not implementing a priority rule
+- Minor bug fixes with SA and GA
+- Test full enumeration on small instance sizes  
