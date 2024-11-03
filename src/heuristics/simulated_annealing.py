@@ -40,7 +40,9 @@ class simulated_annealing(heuristic_template):
         self._visited.append(new_neighbor)
         lateness_new = self.lateness_calculator.calculate(new_neighbor)
         if lateness_new < self._best[0]:
-            self._best = [lateness_new, new_neighbor]
+            self._best = [lateness_new, [new_neighbor]]
+        elif lateness_new == self._best[0]:
+            self._best[1].append(new_neighbor)
         if self.acceptance_prob_function(new_neighbor) > random():
             self._current_solution = new_neighbor
         self.k += 1

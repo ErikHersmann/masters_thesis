@@ -13,9 +13,8 @@ class genetic_algorithm(heuristic_template):
     def __init__(self, machines, jobs_seminars, config_dict) -> None:
         heuristic_template.__init__(self, machines, jobs_seminars, config_dict)
         seed(7)
-        self.N_PARENTS = 6  # 5 is naturally repeating (5 parents generate 10 children, which become 5 parents after 1 round of selection)
-        self.MAX_POP_SIZE = 11
-        self.MAX_EPOCH = 500
+        self.N_PARENTS = 6
+        self.MAX_EPOCH = 4000
         self.F_MUT_PROB = 0.10
         self._current_epoch = 1
         self._mut_treshold = 100 - floor(100 * self.F_MUT_PROB)
@@ -89,33 +88,22 @@ class genetic_algorithm(heuristic_template):
                     self._current_generation[candidate_index][-1].append(job)
 
     def selection(self):
-        """Halfs the current population count via random comparison of 2 individuals and discarding the less fit one\\
-        Maybe keep just keep the top 10 without "dueling"\\
+        """Selects the top N_PARENTS individuals and updates global bests
         """
-        while True:
-            shuffle(self._current_generation)
-            next_generation = []
-            for idx in range(0, len(self._current_generation), 2):
-                if idx == len(self._current_generation) - 1:
-                    fitness2 = 10000
-                else:
-                    fitness2 = self.lateness_calculator.calculate(
-                        self._current_generation[idx + 1]
-                    )
-                fitness1 = self.lateness_calculator.calculate(
-                    self._current_generation[idx]
-                )
-                if fitness1 <= fitness2:
-                    next_generation.append(self._current_generation[idx])
-                    if fitness1 < self._best[0]:
-                        self._best = [fitness1, self._current_generation[idx]]
-                else:
-                    next_generation.append(self._current_generation[idx + 1])
-                    if fitness2 < self._best[0]:
-                        self._best = [fitness2, self._current_generation[idx]]
-            self._current_generation = next_generation
-            if len(self._current_generation) <= self.MAX_POP_SIZE:
-                break
+        next_generation = []
+        for idx in range(len(self._current_generation)):
+            fitness = self.lateness_calculator.calculate(
+                self._current_generation[idx]
+            )
+            if self._current_generation[idx] not in [child[1] for child in next_generation]:
+               next_generation.append((fitness, self._current_generation[idx]))
+        next_generation.sort(key=lambda x: x[0])
+        self._current_generation = [child[1] for child in next_generation[:self.N_PARENTS]]
+        for fitness, child in next_generation:
+            if fitness < self._best[0]:
+                self._best = [fitness, [child]]
+            elif fitness == self._best[0]:
+                self._best[1].append(child)
 
     def recombination(self):
         """For each machine pick a random index in range 0 to minimum of the lengths of the two individuals\\

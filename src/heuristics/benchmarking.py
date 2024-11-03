@@ -39,7 +39,7 @@ if __name__ == "__main__":
         algo1.recombination()
         algo1.selection()
     finish_1 = (time.time_ns() - start) / 10**9
-    print(algo1._best)
+    print([algo1._best[0], algo1._best[1][0], len(algo1._best[1])])
 
     ######################
     # SIMULATED ANNEALING#
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     while algo2.k < algo2.K_MAX:
         algo2.step()
     finish_2 = (time.time_ns() - start) / 10**9
-    print(algo2._best)
+    print([algo2._best[0], algo2._best[1][0], len(algo2._best[1])])
 
     ###################
     # FULL ENUMERATION#
