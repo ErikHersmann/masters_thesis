@@ -20,6 +20,7 @@ class genetic_algorithm(heuristic_template):
         self._mut_treshold = 100 - floor(100 * self.F_MUT_PROB)
         self._best = [1000, None]
         self._current_generation = []
+        self._visited = []
         self.generate_first_generation()
 
     def generate_first_generation(self):
@@ -102,7 +103,7 @@ class genetic_algorithm(heuristic_template):
         for fitness, child in next_generation:
             if fitness < self._best[0]:
                 self._best = [fitness, [child]]
-            elif fitness == self._best[0]:
+            elif fitness == self._best[0] and child not in self._best[1]:
                 self._best[1].append(child)
 
     def recombination(self):
@@ -128,7 +129,11 @@ class genetic_algorithm(heuristic_template):
                         self._current_generation[parent2_idx][machine_idx][split_point:]
                     )
                     machine_idx += 1
+        #removed_duplicates = [child for child in children if child not in self._visited]
+        #while len(removed_duplicates) < 3:
+        #    removed_duplicates = self.recombination()
         self._current_generation = children
+        # self._visited.extend(self._current_generation)
         self._current_epoch += 1
         self.mutate()
 

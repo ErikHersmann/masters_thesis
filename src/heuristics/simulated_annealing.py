@@ -41,7 +41,7 @@ class simulated_annealing(heuristic_template):
         lateness_new = self.lateness_calculator.calculate(new_neighbor)
         if lateness_new < self._best[0]:
             self._best = [lateness_new, [new_neighbor]]
-        elif lateness_new == self._best[0]:
+        elif lateness_new == self._best[0] and new_neighbor not in self._best[1]:
             self._best[1].append(new_neighbor)
         if self.acceptance_prob_function(new_neighbor) > random():
             self._current_solution = new_neighbor
@@ -106,7 +106,9 @@ class simulated_annealing(heuristic_template):
                 neighbor[machine_idx_1].append(item_2)
                 neighbor[machine_idx_2].remove(item_2)
                 neighbor[machine_idx_2].append(item_1)
+                # if neighbor not in self._visited:
                 possible_neighbors.append(neighbor)
+                #     self._visited.append(neighbor)
 
         ret_val = possible_neighbors
         while len(ret_val) == 0:
