@@ -60,4 +60,5 @@ $M^{\text{r}}$ instead of $R$
 - Generate machines from memory
 - Not implementing a priority rule
 - Minor bug fixes with SA and GA
-- Test full enumeration on small instance sizes  
+- Test full enumeration on small instance sizes
+- Ignoring already explored solutions for the heuristics proves to be computationally expensive due to a lot of neighbors being explored and sometimes hitting a dead end with all neighbors having been visited hence needing an alternate strategy where to diverge from that point
