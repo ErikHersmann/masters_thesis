@@ -47,6 +47,8 @@ if __name__ == "__main__":
     print(f"Simulated annealing")
     start = time.time_ns()
     algo2 = simulated_annealing(*setup_tuple, config_dict)
+    # algo2._current_solution = algo1._best[1][0] # Using them in combination
+    # algo2._best = [algo1._best[0], [algo1._best[1][0]]]
     while algo2.k < algo2.K_MAX:
         algo2.step()
     finish_2 = (time.time_ns() - start) / 10**9

@@ -14,7 +14,7 @@ class genetic_algorithm(heuristic_template):
         heuristic_template.__init__(self, machines, jobs_seminars, config_dict)
         seed(7)
         self.N_PARENTS = 6
-        self.MAX_EPOCH = 4000
+        self.MAX_EPOCH = 10000
         self.F_MUT_PROB = 0.10
         self._current_epoch = 1
         self._mut_treshold = 100 - floor(100 * self.F_MUT_PROB)
