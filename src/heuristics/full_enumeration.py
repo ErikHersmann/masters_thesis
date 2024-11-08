@@ -19,7 +19,7 @@ def generate_all_insertions(list1, list2):
 
     results = []
     # Find all positions in list1 where items of list2 can be inserted
-    for positions in combinations(range(len(list1) + len(list2)), len(list2)):
+    for positions in itertools.combinations(range(len(list1) + len(list2)), len(list2)):
         new_list = list1[:]  # Make a copy of list1 to insert into
         for idx, pos in enumerate(positions):
             new_list.insert(
