@@ -1,9 +1,14 @@
 import unittest
 from calculate_lateness import calculate_lateness
+from full_enumeration import enumerate_all_solutions
 
 
 class TestCalculateLateness(unittest.TestCase):
+    """ADD dictionary to calculate lateness instantiation
 
+    Args:
+        unittest (_type_): _description_
+    """    
     def test_correct_lateness_one(self):
         machines = [
             {
@@ -137,7 +142,28 @@ class TestCalculateLateness(unittest.TestCase):
         self.assertEqual(result, 61)
 
 
+class TestFullEnumeration(unittest.TestCase):
+    """SOMEHOW compare the results
+
+    Args:
+        unittest (_type_): _description_
+    """    
+    def test_manually_generated_validation(self):
+        blob = enumerate_all_solutions(2, 0, 2)
+        correct = [
+            [[0, 1], []],
+            [[1, 0], []],
+            [[0], [1]],
+            [[1], [0]],
+            [[], [0, 1]],
+            [[], [1, 0]],
+        ]
+        blob.sort()
+        correct.sort()
+        self.assertEqual(blob, correct)
+
+
 if __name__ == "__main__":
     unittest.main()
-    #machines, jobs, config_dict = None
-    #calculator = calculate_lateness(machines, jobs, config_dict, True)
+    # machines, jobs, config_dict = None
+    # calculator = calculate_lateness(machines, jobs, config_dict, True)
