@@ -42,7 +42,7 @@ class genetic_algorithm(heuristic_template):
             if len(jobs_picked) < self.N_JOBS - 1:
                 for job_index in range(self.N_JOBS):
                     if all_jobs[job_index] not in jobs_picked:
-                        cur_solution[-1].append(all_jobs[job_index])
+                        cur_solution[choice(list(range(self.N_MACHINES)))].append(all_jobs[job_index])
             self._current_generation.append(cur_solution)
         self.repair()
 

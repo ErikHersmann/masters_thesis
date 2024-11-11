@@ -49,8 +49,6 @@ def enumerate_all_solutions(N_JOBS, N_SEMINARS, N_MACHINES):
 
     # Create product of all machines with these sublists
     seminar_assignments = itertools.product(seminar_assignments, repeat=N_MACHINES)
-
-    # Filter out non-distinct configurations
     seminar_assignments = [
         list(map(list, machine_combination))
         for machine_combination in seminar_assignments
