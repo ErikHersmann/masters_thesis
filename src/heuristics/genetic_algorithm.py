@@ -111,6 +111,7 @@ class genetic_algorithm(heuristic_template):
         Take all entries up to the random index from parent 1's machine and all the entries after the index from parent 2's machine
         """
         children = []
+        shuffle(self._current_generation)
         for parent1_idx in range(len(self._current_generation)):
             for parent2_idx in range(parent1_idx + 1, len(self._current_generation)):
                 children.append([])
