@@ -1,5 +1,5 @@
 from algorithm_template import heuristic_template
-from random import random, choice, shuffle, randint
+from random import random, choice, shuffle, randint, choices
 from math import exp
 from copy import deepcopy
 
@@ -29,10 +29,13 @@ class simulated_annealing(heuristic_template):
                 job
             )
 
-    def update_temperature(self):
-        # remainder = 1 - (self.k / self.K_MAX)
-        # self._temperature =  self.starting_temperature * remainder
-        self._temperature = self.starting_temperature * (0.99**self.k)
+    def update_temperature(self, mode=0):
+        if mode == 0:
+            # This is the one that produces better results ?
+            self._temperature = self.starting_temperature * (0.99**self.k)
+        elif mode == 1:
+            remainder = 1 - (self.k / self.K_MAX)
+            self._temperature = self.starting_temperature * remainder
 
     def step(self):
         self.update_temperature()
@@ -52,9 +55,12 @@ class simulated_annealing(heuristic_template):
         ############################
         # INSERT OR DELETE SEMINARS#
         ############################
-        machine_idx = choice(list(range(self.N_MACHINES)))
+        machine_idx = choices(
+            list(range(self.N_MACHINES)),
+            weights=[len(machine) for machine in self._current_solution],
+            k=1,
+        )[0]
         machine = self._current_solution[machine_idx]
-        # for machine_idx, machine in enumerate(self._current_solution):
         current_seminars = [seminar for seminar in machine if seminar >= self.N_JOBS]
         unassigned_seminars = [
             seminar
@@ -69,7 +75,9 @@ class simulated_annealing(heuristic_template):
             possible_neighbors.extend(
                 [neighbor for _ in range(self.favor_short_solutions_factor)]
             )
-        removed_seminar_count = len(current_seminars) if len(current_seminars) > 0 else 2
+        removed_seminar_count = (
+            len(current_seminars) if len(current_seminars) > 0 else 2
+        )
         added_seminar_count = 0
         for seminar in unassigned_seminars:
             if added_seminar_count == removed_seminar_count:
@@ -77,18 +85,17 @@ class simulated_annealing(heuristic_template):
             insertion_index = choice(
                 list(range(len(self._current_solution[machine_idx]) + 1))
             )
-            # for insertion_index in range(len(self._current_solution[machine_idx])+1):
             neighbor = deepcopy(self._current_solution)
             neighbor[machine_idx].insert(insertion_index, seminar)
             possible_neighbors.append(neighbor)
             added_seminar_count += 1
-        ##########################
-        # SWITCH JOBS OR SEMINARS#
-        ##########################
+        ###########
+        # SWAPPING#
+        ###########
         machine_idx_1 = choice(list(range(self.N_MACHINES)))
-        machine_idx_2 = choice(list(range(self.N_MACHINES)))
-        # for machine_idx_1 in range(self.N_MACHINES):
-        #     for machine_idx_2 in range(machine_idx_1, self.N_MACHINES):
+        indices_free_to_choose = list(range(self.N_MACHINES))
+        indices_free_to_choose.remove(machine_idx_1)
+        machine_idx_2 = choice(indices_free_to_choose)
         for item_1 in [
             x for x in self._current_solution[machine_idx_1] if x < self.N_JOBS
         ]:
@@ -96,12 +103,14 @@ class simulated_annealing(heuristic_template):
                 x for x in self._current_solution[machine_idx_2] if x < self.N_JOBS
             ]:
                 neighbor = deepcopy(self._current_solution)
-                if machine_idx_1 != machine_idx_2 and (
+                if (
                     item_1 in self._current_solution[machine_idx_2]
                     or item_2 in self._current_solution[machine_idx_1]
                 ):
-                    # Avoid duplicate seminars / Jobs
                     continue
+                ###########
+                # SWAPPING#
+                ###########
                 neighbor[machine_idx_1].remove(item_1)
                 neighbor[machine_idx_1].append(item_2)
                 neighbor[machine_idx_2].remove(item_2)

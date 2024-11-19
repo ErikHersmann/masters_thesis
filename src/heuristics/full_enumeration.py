@@ -2,6 +2,15 @@ import itertools, json
 from sys import argv
 
 
+def generate_reorderings(list_of_lists):
+    # Generate permutations for each inner list
+    permuted_inner_lists = [list(itertools.permutations(inner)) for inner in list_of_lists]
+
+    # Compute all combinations of these permutations
+    all_combinations = list(itertools.product(*permuted_inner_lists))
+    return [list(map(list, combination)) for combination in all_combinations]
+
+
 def generate_all_insertions(list1, list2):
     """
     Generate all possible ways to insert elements of list2 into list1,
@@ -14,7 +23,7 @@ def generate_all_insertions(list1, list2):
     Returns:
     - A list of all possible insertions (A list of all valid insertions on 1 machine)
     """
-    if not list2:  # If list2 is empty, there's nothing to insert
+    if not list2:
         return [list1]
 
     results = []
@@ -56,42 +65,42 @@ def enumerate_all_solutions(N_JOBS, N_SEMINARS, N_MACHINES):
 
     for job_assignment in job_assignments:
         # Set up the job order
-        machines = [[] for _ in range(N_MACHINES)]
-        for job_idx, machine in enumerate(job_assignment):
-            machines[machine].append(job_idx)
+        unordered_machines = [[] for _ in range(N_MACHINES)]
+        for job_idx, machine_idx in enumerate(job_assignment):
+            unordered_machines[machine_idx].append(job_idx)
 
-        # Add the seminars
-        for seminar_assignment in seminar_assignments:
-            possible_machine_assignments = [
-                generate_all_insertions(
-                    machines[machine_idx], seminar_assignments_on_machine
-                )
-                for machine_idx, seminar_assignments_on_machine in enumerate(
-                    seminar_assignment
-                )
-            ]
-            # calculate all recombinations of machines of all the current producable seminar insertion
-            for combination in itertools.product(*possible_machine_assignments):
-                current_solution = list(combination)
-                # Filtering out "trailing seminar" solutions (since these will always be weakly dominated by their equivalent with the trailing seminar stripped)
-                if any(
-                    [
-                        True if len(machine) > 0 and machine[-1] >= N_JOBS else False
-                        for machine in current_solution
-                    ]
-                ):
-                    continue
-                output.append({"idx": idx, "solution": current_solution})
-                idx += 1
+        # All combinations of these machine assignments (orders)
+        for machines in generate_reorderings(unordered_machines):
+            # Add the seminars
+            for seminar_assignment in seminar_assignments:
+                possible_machine_assignments = [
+                    generate_all_insertions(
+                        machines[machine_idx], seminar_assignments_on_machine
+                    )
+                    for machine_idx, seminar_assignments_on_machine in enumerate(
+                        seminar_assignment
+                    )
+                ]
+                # calculate all recombinations of machines of all the current producable seminar insertion
+                for combination in itertools.product(*possible_machine_assignments):
+                    current_solution = list(combination)
+                    # Filtering out "trailing seminar" solutions (since these will always be weakly dominated by their equivalent with the trailing seminar stripped)
+                    if all(
+                        [
+                            False if len(machine) > 0 and machine[-1] >= N_JOBS else True
+                            for machine in current_solution
+                        ]
+                    ):
+                        output.append({"idx": idx, "solution": current_solution})
+                        idx += 1
     return output
 
+
 if __name__ == "__main__":
-    result = enumerate_all_solutions(2, 2, 3)
-    for res in result:
-        print(res)
     if len(argv) >= 4:
         N_JOBS, N_SEMINARS, N_MACHINES = (int(x) for x in argv[1:5])
     else:
+        print("Exiting with code -1")
         exit(-1)
     result = enumerate_all_solutions(
         N_JOBS=N_JOBS, N_SEMINARS=N_SEMINARS, N_MACHINES=N_MACHINES

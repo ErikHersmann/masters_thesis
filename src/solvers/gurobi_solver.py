@@ -8,7 +8,7 @@ from toposort import toposort, toposort_flatten
 class linear_solver:
 
     def __init__(self, machines, jobs_seminars, config_dict, verbose=False) -> None:
-        self.RESULTS_DIR = "results/"
+        self.RESULTS_DIR = "results/gurobi/"
         self.config_dict = config_dict
         self.verbose = verbose
         self.SKILL_LEVEL_LB = self.config_dict["skill_config"]["min_machine_skill"]
@@ -31,7 +31,21 @@ class linear_solver:
             )
             for job in self.jobs_seminars
         ]
-        self.BIG_M_XOR = ceil(sum(worst_processing_times)) + 1
+        processing_times_at_start = [
+            [
+                (
+                    (job["base_duration"] * job["skill_level_required"])
+                    / current_employee['skills'][job["skill_required"]]
+                    if job["type"] == "job"
+                    else job["base_duration"]
+                )
+                for job in self.jobs_seminars
+            ]
+            for current_employee in self.machines
+        ]
+        processing_times_at_start = [sum(machine) for machine in processing_times_at_start]
+        #self.BIG_M_XOR = ceil(sum(worst_processing_times)) + 1
+        self.BIG_M_XOR = ceil(sum(processing_times_at_start)) + 1
         self.BIG_M_CAP = ceil(max(worst_processing_times)) + 1
         self.BIG_M_MAX = self.SKILL_LEVEL_UB + 1
         self.N_MACHINES = len(self.machines)
@@ -180,7 +194,7 @@ class linear_solver:
         ##############
 
         # Each job has to be completed once
-
+        # This all limits each job to be on one machine overall
         for job in range(self.N_JOBS):
             self.model += (
                 sum(
@@ -194,8 +208,8 @@ class linear_solver:
             )
 
         # Seminars can be completed at most once
-        for machine in range(self.N_MACHINES):
-            for seminar in range(self.N_JOBS, self.N_JOBS_AND_SEMINARS):
+        for seminar in range(self.N_JOBS, self.N_JOBS_AND_SEMINARS):
+            for machine in range(self.N_MACHINES):
                 self.model += (
                     sum(
                         [
@@ -209,11 +223,11 @@ class linear_solver:
         # Despite commenting this it still doesnt schedule everything at 0 why ?
         # Machines must have at most one job on them for any given time t
 
-        for job1 in range(self.N_JOBS_AND_SEMINARS):
-            for job2 in range(self.N_JOBS_AND_SEMINARS):
-                if job1 == job2:
-                    continue
-                for machine in range(self.N_MACHINES):
+        for machine in range(self.N_MACHINES):
+            for job1 in range(self.N_JOBS_AND_SEMINARS):
+                for job2 in range(self.N_JOBS_AND_SEMINARS):
+                    if job1 == job2:
+                        continue
                     left_side = sum(
                         [
                             self.start_times_binary[(machine, job1, time)] * time
@@ -625,13 +639,15 @@ class linear_solver:
                     precedence_map[machine][index[1]].append(index[0])
 
             # For each machine, determine the job precedence order
-            for machine, precedences in precedence_map.items():
+            try:
+                for machine, precedences in precedence_map.items():
 
-                # Store the final order in the results dict
-                results["machine_one_job_constraint_helper_binary_pprint"][machine] = (
-                    toposort_flatten(precedences)
-                )
-
+                    # Store the final order in the results dict
+                    results["machine_one_job_constraint_helper_binary_pprint"][machine] = (
+                        toposort_flatten(precedences)
+                    )
+            except:
+                print("toposort failed")
             ###########
             # BINARIES#
             ###########

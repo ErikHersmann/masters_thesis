@@ -142,6 +142,6 @@ if __name__ == "__main__":
         "machines": machines,
         "jobs_seminars": jobs,
     }
-    with open(f"results/{epoch_time}_benchmark.json", "w") as f:
+    with open(f"results/benchmark/{epoch_time}_benchmark.json", "w") as f:
         json.dump(results, f)
     print(f"Saved as {epoch_time}_benchmark.json")
