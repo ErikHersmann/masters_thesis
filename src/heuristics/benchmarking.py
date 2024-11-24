@@ -27,6 +27,7 @@ if __name__ == "__main__":
     N_JOBS = sum([1 for job in jobs if job["type"] == "job"])
     N_SEMINARS = sum([1 for job in jobs if job["type"] == "seminar"])
     setup_tuple = (machines, jobs)
+    lateness_calculator = calculate_lateness(machines, jobs, config_dict, True, True)
     print(f"N_JOBS {N_JOBS} N_SEMINARS {N_SEMINARS} N_MACHINES {N_MACHINES}")
 
     ####################
@@ -40,6 +41,7 @@ if __name__ == "__main__":
         algo1.selection()
     finish_1 = (time.time_ns() - start) / 10**9
     print([algo1._best[0], algo1._best[1][0], len(algo1._best[1])])
+    lateness_calculator.calculate(algo1._best[1][0])
 
     ######################
     # SIMULATED ANNEALING#
@@ -53,6 +55,7 @@ if __name__ == "__main__":
         algo2.step()
     finish_2 = (time.time_ns() - start) / 10**9
     print([algo2._best[0], algo2._best[1][0], len(algo2._best[1])])
+    lateness_calculator.calculate(algo2._best[1][0])
 
     ###################
     # FULL ENUMERATION#
@@ -74,6 +77,7 @@ if __name__ == "__main__":
                 algo3_best[1].append(solution)
         finish_3 = (time.time_ns() - start) / 10**9
         print([algo3_best[0], algo3_best[1][0]['solution'], len(algo3_best[1])])
+        lateness_calculator.calculate(algo3_best[1][0]['solution'])
         with open(solutions_path, "w") as f:
             json.dump(solutions, f)
         opt_solution_count = len(algo3_best[1])
@@ -98,6 +102,7 @@ if __name__ == "__main__":
         solver.compile()
         gurobi_lateness, gurobi_solution = solver.solve(write_verbose_output=True, terminal_output=False)
         print(f"Gurobi\n{[int(gurobi_lateness), gurobi_solution]}")
+        lateness_calculator.calculate(gurobi_solution)
         finish_4 = (time.time_ns() - start) / 10**9
         gurobi_calculated_lateness = calculator.calculate(gurobi_solution)
     else:

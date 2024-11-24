@@ -35,7 +35,7 @@ class linear_solver:
             [
                 (
                     (job["base_duration"] * job["skill_level_required"])
-                    / current_employee['skills'][job["skill_required"]]
+                    / current_employee["skills"][job["skill_required"]]
                     if job["type"] == "job"
                     else job["base_duration"]
                 )
@@ -43,8 +43,10 @@ class linear_solver:
             ]
             for current_employee in self.machines
         ]
-        processing_times_at_start = [sum(machine) for machine in processing_times_at_start]
-        #self.BIG_M_XOR = ceil(sum(worst_processing_times)) + 1
+        processing_times_at_start = [
+            sum(machine) for machine in processing_times_at_start
+        ]
+        # self.BIG_M_XOR = ceil(sum(worst_processing_times)) + 1
         self.BIG_M_XOR = ceil(sum(processing_times_at_start)) + 1
         self.BIG_M_CAP = ceil(max(worst_processing_times)) + 1
         self.BIG_M_MAX = self.SKILL_LEVEL_UB + 1
@@ -175,16 +177,18 @@ class linear_solver:
         )
         for job in range(self.N_JOBS):
             time_over_deadline = sum(
-                [
-                    time * self.start_times_binary[(machine, job, time)]
-                    + self.start_cdot_duration_helper_binary[(machine, job, time)]
-                    - (
-                        self.jobs_seminars[job]["deadline"]
-                        * self.start_times_binary[(machine, job, time)]
-                    )
-                    for time in range(self.N_TIME)
-                    for machine in range(self.N_MACHINES)
-                ]
+                sum(
+                    [
+                        time * self.start_times_binary[(machine, job, time)]
+                        + self.start_cdot_duration_helper_binary[(machine, job, time)]
+                        - (
+                            self.jobs_seminars[job]["deadline"]
+                            * self.start_times_binary[(machine, job, time)]
+                        )
+                        for time in range(self.N_TIME)
+                    ]
+                )
+                for machine in range(self.N_MACHINES)
             )
             self.model += self.lateness >= time_over_deadline
         self.model += self.lateness
@@ -304,10 +308,10 @@ class linear_solver:
                         self.start_cdot_duration_helper_binary[(machine, job, time)]
                         <= self.processing_times_integer[(machine, job, time)]
                     )
-                    self.model += (
-                        self.start_cdot_duration_helper_binary[(machine, job, time)]
-                        >= self.processing_times_integer[(machine, job, time)]
-                        - (1 - self.start_times_binary[(machine, job, time)])
+                    self.model += self.start_cdot_duration_helper_binary[
+                        (machine, job, time)
+                    ] >= self.processing_times_integer[(machine, job, time)] - (
+                        (1 - self.start_times_binary[(machine, job, time)])
                         * self.BIG_M_CAP
                     )
 
@@ -643,9 +647,9 @@ class linear_solver:
                 for machine, precedences in precedence_map.items():
 
                     # Store the final order in the results dict
-                    results["machine_one_job_constraint_helper_binary_pprint"][machine] = (
-                        toposort_flatten(precedences)
-                    )
+                    results["machine_one_job_constraint_helper_binary_pprint"][
+                        machine
+                    ] = toposort_flatten(precedences)
             except:
                 print("toposort failed")
             ###########

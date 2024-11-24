@@ -1,12 +1,24 @@
 from math import ceil,floor
 from copy import deepcopy
+import matplotlib.pyplot as plt
+import time, itertools
 
 
 class calculate_lateness:
-    def __init__(self, machines, jobs_seminars, config_dict, debug_mode=False) -> None:
+
+    def __init__(
+        self,
+        machines,
+        jobs_seminars,
+        config_dict,
+        debug_mode=False,
+        produce_graphs=False,
+    ) -> None:
         self.machines = machines
         self.jobs_seminars = jobs_seminars
+        self.N_JOBS = sum([1 for job in jobs_seminars if job['type'] == 'job'])
         self.debug_mode = debug_mode
+        self.graph_mode = produce_graphs
         self.SKILL_LIMIT_UB = config_dict["skill_config"]["max_machine_skill"]
 
     def calculate(self, order, no_floats=False):
@@ -79,6 +91,50 @@ class calculate_lateness:
                     )
                 current_time += current_processing_duration
         if self.debug_mode:
-            for machine in debug_times:
-                print(machine)
+            # for machine in debug_times:
+            #     print(machine)
+            if self.graph_mode:
+                self.plot_gantt_chart(debug_times)
         return lateness
+
+    def plot_gantt_chart(self, schedule):
+        fig, ax = plt.subplots(figsize=(10, 6))
+    
+        # Loop through each machine's schedule
+        for machine_id, jobs in enumerate(schedule):
+            # Use alternating colors for jobs on the same machine
+            machine_colors = itertools.cycle(['tab:blue', 'tab:cyan'])  # Reset colors for each machine
+            for job in jobs:
+                start = job["start"]
+                end = job["finish"]
+                job_id = job["job"]
+
+                color = 'orange' if job_id >= self.N_JOBS else next(machine_colors)
+
+                # Add a bar for the job with the selected color
+                ax.broken_barh([(start, end - start)], (machine_id - 0.4, 0.8), facecolors=color)
+                
+                # Add job ID as label
+                ax.text((start + end) / 2, machine_id, str(job_id), 
+                        ha='center', va='center', color='white', fontsize=10)
+
+        # Set labels and remove grid lines
+        ax.set_yticks(range(len(schedule)))
+        ax.set_yticklabels([f"Machine {i+1}" for i in range(len(schedule))])
+        ax.set_xlabel("Time")
+        ax.set_ylabel("Machines")
+        ax.set_title("Gantt Chart for Jobs")
+        ax.grid(False)  # Disable grid lines
+        # Set x-ticks to full integers only
+        max_time = max(job["finish"] for machine in schedule for job in machine)
+        ax.set_xticks(range(0, max_time + 1))  # Full integer steps
+
+        plt.savefig(f"results/plots/{int(time.time())}_gantt.png", bbox_inches="tight")
+        plt.close(fig)
+        
+    def plot_skill_level_progression(self, skill_levels):
+        # X is time
+        # Y is skill level
+        # Each line represents another skill
+        # One diagram for each machine -> In a grid so it is one picture
+        pass
