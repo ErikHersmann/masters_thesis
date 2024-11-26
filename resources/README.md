@@ -64,3 +64,14 @@ $M^{\text{r}}$ instead of $R$
 - Ignoring already explored solutions for the heuristics proves to be computationally expensive due to a lot of neighbors being explored and sometimes hitting a dead end with all neighbors having been visited hence needing an alternate strategy where to diverge from that point
 - Heuristic GA first -> depth search via SA
 - Difficulty of instances (measurement ?)
+
+## Notes from third meeting
+- Debugging GUROBI:
+	- Timeout set ?
+	- Check the log for non optimality
+ 	- Minimal working example, force optimal solution via setting x variables
+- 50-60 Pages
+- Code handin via gitlab
+- complexity analysis -> dont make any assumptions or non fact based stuffsies
+- hyperparameter search + recommendation of best via grid search or similar
+- Use gurobi lower bound for optimlaity gap for unsolvable instances
