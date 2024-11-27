@@ -169,13 +169,17 @@ class TestFullEnumeration(unittest.TestCase):
     def test_ouput_sizes(self):
         print("Output sizes")
         output_string = []
-        for job_count in range(1, 6):
+        for job_count in range(1, 7):
             for machine_count in range(2, 3):
                 for seminar_count in range(0, 4):
                     timer = time_ns()
                     length = len(enumerate_all_solutions(job_count, seminar_count, machine_count))
                     runtime = int((time_ns() - timer) / (10**6))
-                    cur_string = f"{job_count} & {seminar_count} & {machine_count} & {length} & {runtime} \\\\"
+                    if runtime == 0:
+                        runtime_string = "$< 0$"
+                    else:
+                        runtime_string = f"{runtime:,d}"
+                    cur_string = f"{job_count} & {seminar_count} & {machine_count} & {length:,d} & {runtime_string} \\\\"
                     output_string.append(cur_string) 
                     print(
                         cur_string
