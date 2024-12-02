@@ -75,4 +75,5 @@ $M^{\text{r}}$ instead of $R$
 - complexity analysis -> dont make any assumptions or non fact based stuffsies
 - hyperparameter search + recommendation of best via grid search or similar
 - Use gurobi lower bound for optimlaity gap for unsolvable instances
+
 stopping criterion could be based on the max iterations (1% of max iterations without change -> quitting too)
