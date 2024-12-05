@@ -100,7 +100,7 @@ if __name__ == "__main__":
             verbose=False,
         )
         solver.compile()
-        gurobi_lateness, gurobi_solution = solver.solve(write_verbose_output=True, terminal_output=False)
+        gurobi_lateness, gurobi_solution = solver.solve(write_verbose_output=True, terminal_output=True)
         print(f"Gurobi\n{[int(gurobi_lateness), gurobi_solution]}")
         lateness_calculator.calculate(gurobi_solution)
         finish_4 = (time.time_ns() - start) / 10**9

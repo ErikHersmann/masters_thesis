@@ -2,7 +2,7 @@ import unittest
 from calculate_lateness import calculate_lateness
 from full_enumeration import enumerate_all_solutions
 from time import time_ns
-import pyperclip
+import pyperclip, math
 
 
 class TestCalculateLateness(unittest.TestCase):
@@ -166,6 +166,13 @@ class TestFullEnumeration(unittest.TestCase):
     #     correct.sort()
     #     self.assertEqual(blob, correct)
 
+    def calculate_expression(self, M, J, S):
+        return (
+            (M**J * math.factorial(J))
+            * ((2**S) ** M)
+            * (((J + 1) ** S) * math.factorial(S))
+        )
+
     def test_ouput_sizes(self):
         print("Output sizes")
         output_string = []
@@ -173,17 +180,20 @@ class TestFullEnumeration(unittest.TestCase):
             for machine_count in range(2, 3):
                 for seminar_count in range(0, 4):
                     timer = time_ns()
-                    length = len(enumerate_all_solutions(job_count, seminar_count, machine_count))
+                    length = len(
+                        enumerate_all_solutions(job_count, seminar_count, machine_count)
+                    )
+                    upper_bound = self.calculate_expression(
+                        machine_count, job_count, seminar_count
+                    )
                     runtime = int((time_ns() - timer) / (10**6))
                     if runtime == 0:
-                        runtime_string = "$< 0$"
+                        runtime_string = "$< 1$"
                     else:
                         runtime_string = f"{runtime:,d}"
-                    cur_string = f"{job_count} & {seminar_count} & {machine_count} & {length:,d} & {runtime_string} \\\\"
-                    output_string.append(cur_string) 
-                    print(
-                        cur_string
-                    )
+                    cur_string = f"{job_count} & {seminar_count} & {machine_count} & {length:,d} & {upper_bound:,d} & {runtime_string} \\\\"
+                    output_string.append(cur_string)
+                    print(cur_string)
         pyperclip.copy("\n".join(output_string))
 
 

@@ -568,7 +568,7 @@ class linear_solver:
             GUROBI(
                 mip=True,
                 logPath=self.RESULTS_DIR + "gurobi_log.txt",
-                timeLimit=6000,
+                timeLimit=60000,
                 displayInterval=5,
                 msg=terminal_output,
             )
