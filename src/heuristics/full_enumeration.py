@@ -105,7 +105,7 @@ if __name__ == "__main__":
     result = enumerate_all_solutions(
         N_JOBS=N_JOBS, N_SEMINARS=N_SEMINARS, N_MACHINES=N_MACHINES
     )
-    fname = f"results/j{N_JOBS}s{N_SEMINARS}m{N_MACHINES}_enum_v2.json"
+    fname = f"results/j{N_JOBS}s{N_SEMINARS}m{N_MACHINES}_enum.json"
     with open(fname, "w") as f:
         json.dump(
             result,

@@ -7,17 +7,17 @@ from copy import deepcopy
 class simulated_annealing(heuristic_template):
     """Acceptance prob function still a bit wonky"""
 
-    def __init__(self, machines, jobs_seminars, config_dict) -> None:
+    def __init__(self, machines, jobs_seminars, config_dict, T=100, max_epoch=10000, favor_short_solutions_factor=1) -> None:
         heuristic_template.__init__(self, machines, jobs_seminars, config_dict)
         self._current_solution = None
         self._temperature = None
-        self.starting_temperature = 100
-        self.K_MAX = 10000
+        self.starting_temperature = T
+        self.K_MAX = max_epoch
         self.k = 1
         self._best = [10000, None]
         self._visited = []
         # the higher this factor the more short solutions are favored
-        self.favor_short_solutions_factor = 1
+        self.favor_short_solutions_factor = favor_short_solutions_factor
         self.generate_start()
 
     def generate_start(self):

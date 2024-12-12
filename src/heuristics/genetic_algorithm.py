@@ -10,12 +10,14 @@ class genetic_algorithm(heuristic_template):
     Selection -> next parent generation
     """
 
-    def __init__(self, machines, jobs_seminars, config_dict) -> None:
+    def __init__(
+        self, machines, jobs_seminars, config_dict, k=6, max_epoch=10000, mut_prob=0.1
+    ) -> None:
         heuristic_template.__init__(self, machines, jobs_seminars, config_dict)
         seed(7)
-        self.N_PARENTS = 6
-        self.MAX_EPOCH = 10000
-        self.F_MUT_PROB = 0.10
+        self.N_PARENTS = k
+        self.MAX_EPOCH = max_epoch
+        self.F_MUT_PROB = mut_prob
         self._current_epoch = 1
         self._mut_treshold = 100 - floor(100 * self.F_MUT_PROB)
         self._best = [1000, None]
@@ -97,7 +99,7 @@ class genetic_algorithm(heuristic_template):
                 self._current_generation[idx]
             )
             if self._current_generation[idx] not in [child[1] for child in next_generation]:
-               next_generation.append((fitness, self._current_generation[idx]))
+                next_generation.append((fitness, self._current_generation[idx]))
         next_generation.sort(key=lambda x: x[0])
         self._current_generation = [child[1] for child in next_generation[:self.N_PARENTS]]
         for fitness, child in next_generation:
@@ -130,8 +132,8 @@ class genetic_algorithm(heuristic_template):
                         self._current_generation[parent2_idx][machine_idx][split_point:]
                     )
                     machine_idx += 1
-        #removed_duplicates = [child for child in children if child not in self._visited]
-        #while len(removed_duplicates) < 3:
+        # removed_duplicates = [child for child in children if child not in self._visited]
+        # while len(removed_duplicates) < 3:
         #    removed_duplicates = self.recombination()
         self._current_generation = children
         # self._visited.extend(self._current_generation)
@@ -140,6 +142,3 @@ class genetic_algorithm(heuristic_template):
 
     def __str__(self):
         return "\n".join([str(x) for x in self._current_generation])
-
-
-

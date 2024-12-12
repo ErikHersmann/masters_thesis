@@ -108,6 +108,7 @@ class linear_solver:
             ],
             cat="Binary",
         )
+        # This is c in the model
         self.start_cdot_skill_level_helper_binary = LpVariable.dicts(
             "e",
             [
