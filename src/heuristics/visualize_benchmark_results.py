@@ -84,6 +84,29 @@ if __name__ == "__main__":
 
     plt.savefig(f"{output_directory}algorithm_runtimes.png")
 
-
     # optimality gap chart
-    
+    plt.clf()
+    plt.figure(figsize=(10, 6))
+    for algorithm_name in list(instance_sizes[list(instance_sizes.keys())[0]].keys()):
+        plt.plot(
+            list(range(len(instance_sizes.keys()))),
+            [
+                x[algorithm_name][1]
+                for x in instance_sizes.values()
+                if algorithm_name in x
+            ],
+            marker="o",
+            label=algorithm_name,
+        )
+    plt.xlabel("Instance Size (Job, Seminar, Machine)")
+    plt.ylabel("Lateness")
+    plt.title("Average Algorithm Lateness by Instance Size")
+    plt.xticks(
+        rotation=45,
+        ticks=list(range(len(instance_sizes.keys()))),
+        labels=[str(x) for x in list(instance_sizes.keys())],
+    )
+    plt.legend(title="Algorithm")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f"{output_directory}algorithm_lateness.png")
