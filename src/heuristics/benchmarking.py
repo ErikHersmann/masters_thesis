@@ -61,7 +61,7 @@ if __name__ == "__main__":
     ####################
     print(f"Genetic algorithm")
     start = time.time_ns()
-    algo1 = genetic_algorithm(*setup_tuple, config_dict)
+    algo1 = genetic_algorithm(*setup_tuple, config_dict, 6, 5000)
     algo1.run()
     finish_1 = (time.time_ns() - start) / 10**9
     print([algo1._best[0], algo1._best[1][0], len(algo1._best[1])])
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     ######################
     print(f"Simulated annealing")
     start = time.time_ns()
-    algo2 = simulated_annealing(*setup_tuple, config_dict)
+    algo2 = simulated_annealing(*setup_tuple, config_dict, 100, 1000, 3)
     algo2.run()
     finish_2 = (time.time_ns() - start) / 10**9
     print([algo2._best[0], algo2._best[1][0], len(algo2._best[1])])
@@ -177,7 +177,7 @@ if __name__ == "__main__":
                 "solution": gurobi_solution,
                 "runtime_seconds": finish_4,
             },
-            "cross_validation_results" : cross_validation(*setup_tuple, config_dict)
+            "cross_validation_results" : cross_validation(setup_tuple, config_dict)
         },
         "machines": machines,
         "jobs_seminars": jobs,

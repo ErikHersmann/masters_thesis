@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from statistics import mean
 import json, sys, glob
+from collections import Counter
 
 
 def calculate_means(data):
@@ -28,6 +29,7 @@ if __name__ == "__main__":
 
     output_directory = "results/plots/"
     instance_sizes = {}
+    cross_validation_histogram = {"genetic_algorithm": [], "simulated_annealing": []}
 
     for filename in glob.glob("results/benchmark/*_benchmark.json"):
         # For averaging purposes
@@ -44,7 +46,11 @@ if __name__ == "__main__":
             instance_sizes[instance_size] = {}
 
         for algorithm_name in results["solutions"].keys():
+            if algorithm_name == "cross_validation_results": continue
             runtime = results["solutions"][algorithm_name]["runtime_seconds"]
+            if algorithm_name in results['solutions']['cross_validation_results']:
+                cross_validation = results['solutions']["cross_validation_results"][algorithm_name][0]
+                cross_validation_histogram[algorithm_name].append(cross_validation)
             if "lateness" in results["solutions"][algorithm_name].keys():
                 lateness = results["solutions"][algorithm_name]["lateness"]
             else:
@@ -110,5 +116,20 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(f"{output_directory}algorithm_lateness.png")
+    plt.clf()
 
     # ALso write something that only uses the instances that have been solved by the exact solvers (or atleast one of the 2) and then plot the absolute optimality gap instance wise, not averaged
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+    for ax, (method, data) in zip(axes, cross_validation_histogram.items()):
+        counts = Counter(data)
+        labels = list(counts.keys())
+        values = list(counts.values())
+        ax.bar(labels, values, color="skyblue")
+        ax.set_title(f"Histogram for {method}")
+        ax.set_xlabel("Instance size")
+        ax.set_ylabel("Frequency")
+
+    plt.tight_layout()
+    plt.savefig(f"{output_directory}cross_val_histogram.png")
