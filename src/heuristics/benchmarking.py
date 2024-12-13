@@ -151,7 +151,7 @@ if __name__ == "__main__":
             },
             "gurobi": {
                 "lateness_model": gurobi_lateness,
-                "lateness_recalculated" : gurobi_calculated_lateness,
+                "lateness" : gurobi_calculated_lateness,
                 "solution": gurobi_solution,
                 "runtime_seconds": finish_4,
             },
