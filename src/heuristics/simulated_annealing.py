@@ -137,3 +137,7 @@ class simulated_annealing(heuristic_template):
             return exp((-(new_obj - old_obj)) / self._temperature)
         except OverflowError:
             return 0.0
+
+    def run(self):
+        while self.k < self.K_MAX:
+            self.step()

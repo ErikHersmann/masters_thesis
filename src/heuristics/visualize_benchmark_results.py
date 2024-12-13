@@ -110,3 +110,5 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(f"{output_directory}algorithm_lateness.png")
+
+    # ALso write something that only uses the instances that have been solved by the exact solvers (or atleast one of the 2) and then plot the absolute optimality gap instance wise, not averaged

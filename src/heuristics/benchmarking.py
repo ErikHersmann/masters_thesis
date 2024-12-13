@@ -9,6 +9,32 @@ from calculate_lateness import calculate_lateness
 from solvers.gurobi_solver import linear_solver
 
 
+def cross_validation(setup_tuple, config_dict):
+    results = {"genetic_algorithm": ["", 100000], "simulated_annealing": ["", 100000]}
+    for k in [6, 10, 15]:
+        for max_epoch in [1000, 5000]:
+            for mut_prob in [0.01, 0.1, 0.2]:
+                genetic_algorithm_instance = genetic_algorithm(*setup_tuple, config_dict, k, max_epoch, mut_prob)
+                genetic_algorithm_instance.run()
+                lateness = genetic_algorithm_instance._best[0]
+                parameter_string = f"{k}|{max_epoch}|{mut_prob}"
+                if lateness < results['genetic_algorithm'][1]:
+                    results["genetic_algorithm"] = [parameter_string, lateness]
+                print(f"GA {parameter_string}\t{lateness}")
+
+    for T in [10, 50, 100]:
+        for max_epoch in [1000, 5000, 10000]:
+            for favor_short_solutions_factor in [1, 2, 3, 5]:
+                simulated_annealing_instance = simulated_annealing(*setup_tuple, config_dict, T, max_epoch, favor_short_solutions_factor)
+                simulated_annealing_instance.run()
+                lateness = simulated_annealing_instance._best[0]
+                parameter_string = f"{T}|{max_epoch}|{favor_short_solutions_factor}"
+                if lateness < results['simulated_annealing'][1]:
+                    results["simulated_annealing"] = [parameter_string, lateness]
+                print(f"SA {parameter_string}\t{lateness}")
+    return results
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 4:
         N_JOBS, N_SEMINARS, N_MACHINES = map(int, sys.argv[1:])
@@ -36,9 +62,7 @@ if __name__ == "__main__":
     print(f"Genetic algorithm")
     start = time.time_ns()
     algo1 = genetic_algorithm(*setup_tuple, config_dict)
-    while algo1._current_epoch < algo1.MAX_EPOCH:
-        algo1.recombination()
-        algo1.selection()
+    algo1.run()
     finish_1 = (time.time_ns() - start) / 10**9
     print([algo1._best[0], algo1._best[1][0], len(algo1._best[1])])
     lateness_calculator.calculate(algo1._best[1][0])
@@ -49,8 +73,7 @@ if __name__ == "__main__":
     print(f"Simulated annealing")
     start = time.time_ns()
     algo2 = simulated_annealing(*setup_tuple, config_dict)
-    while algo2.k < algo2.K_MAX:
-        algo2.step()
+    algo2.run()
     finish_2 = (time.time_ns() - start) / 10**9
     print([algo2._best[0], algo2._best[1][0], len(algo2._best[1])])
     lateness_calculator.calculate(algo2._best[1][0])
@@ -63,8 +86,7 @@ if __name__ == "__main__":
     algo5 = simulated_annealing(*setup_tuple, config_dict)
     algo5._current_solution = algo1._best[1][0] 
     algo5._best = [algo1._best[0], [algo1._best[1][0]]]
-    while algo5.k < algo5.K_MAX:
-        algo5.step()
+    algo5.run()
     finish_5 = (time.time_ns() - start) / 10**9
     print([algo5._best[0], algo5._best[1][0], len(algo5._best[1])])
     lateness_calculator.calculate(algo5._best[1][0])
@@ -155,6 +177,7 @@ if __name__ == "__main__":
                 "solution": gurobi_solution,
                 "runtime_seconds": finish_4,
             },
+            "cross_validation_results" : cross_validation(*setup_tuple, config_dict)
         },
         "machines": machines,
         "jobs_seminars": jobs,

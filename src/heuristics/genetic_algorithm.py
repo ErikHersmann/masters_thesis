@@ -7,7 +7,8 @@ class genetic_algorithm(heuristic_template):
     """Recombine Parent generation\\
     Mutate their children\\
     Repair the children\\
-    Selection -> next parent generation
+    Selection -> next parent generation\\
+    machines, jobs_seminars, config_dict, k=6, max_epoch=10000, mut_prob=0.1
     """
 
     def __init__(
@@ -139,6 +140,11 @@ class genetic_algorithm(heuristic_template):
         # self._visited.extend(self._current_generation)
         self._current_epoch += 1
         self.mutate()
+
+    def run(self):
+        while self._current_epoch < self.MAX_EPOCH:
+            self.recombination()
+            self.selection()
 
     def __str__(self):
         return "\n".join([str(x) for x in self._current_generation])
