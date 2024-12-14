@@ -10,7 +10,7 @@ from solvers.gurobi_solver import linear_solver
 
 
 def cross_validation(setup_tuple, config_dict):
-    results = {"genetic_algorithm": ["", 100000], "simulated_annealing": ["", 100000]}
+    results = {"genetic_algorithm": [[], 100000], "simulated_annealing": [[], 100000]}
     for k in [6, 10, 15]:
         for max_epoch in [1000, 5000]:
             for mut_prob in [0.01, 0.1, 0.2]:
@@ -19,7 +19,9 @@ def cross_validation(setup_tuple, config_dict):
                 lateness = genetic_algorithm_instance._best[0]
                 parameter_string = f"{k}|{max_epoch}|{mut_prob}"
                 if lateness < results['genetic_algorithm'][1]:
-                    results["genetic_algorithm"] = [parameter_string, lateness]
+                    results["genetic_algorithm"] = [[parameter_string], lateness]
+                elif lateness == results["genetic_algorithm"][1]:
+                    results["genetic_algorithm"][0].append(parameter_string)
                 print(f"GA {parameter_string}\t{lateness}")
 
     for T in [10, 50, 100]:
@@ -30,7 +32,9 @@ def cross_validation(setup_tuple, config_dict):
                 lateness = simulated_annealing_instance._best[0]
                 parameter_string = f"{T}|{max_epoch}|{favor_short_solutions_factor}"
                 if lateness < results['simulated_annealing'][1]:
-                    results["simulated_annealing"] = [parameter_string, lateness]
+                    results["simulated_annealing"] = [[parameter_string], lateness]
+                elif lateness == results["simulated_annealing"][1]:
+                    results["simulated_annealing"][0].append(parameter_string)
                 print(f"SA {parameter_string}\t{lateness}")
     return results
 

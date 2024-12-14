@@ -50,7 +50,7 @@ if __name__ == "__main__":
             runtime = results["solutions"][algorithm_name]["runtime_seconds"]
             if algorithm_name in results['solutions']['cross_validation_results']:
                 cross_validation = results['solutions']["cross_validation_results"][algorithm_name][0]
-                cross_validation_histogram[algorithm_name].append(cross_validation)
+                cross_validation_histogram[algorithm_name].extend(cross_validation)
             if "lateness" in results["solutions"][algorithm_name].keys():
                 lateness = results["solutions"][algorithm_name]["lateness"]
             else:
@@ -120,16 +120,17 @@ if __name__ == "__main__":
 
     # ALso write something that only uses the instances that have been solved by the exact solvers (or atleast one of the 2) and then plot the absolute optimality gap instance wise, not averaged
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    fig, axes = plt.subplots(2, 1, figsize=(12, 9))
 
     for ax, (method, data) in zip(axes, cross_validation_histogram.items()):
         counts = Counter(data)
+        counts = {key: value for key, value in counts.items() if value > 1}
         labels = list(counts.keys())
         values = list(counts.values())
         ax.bar(labels, values, color="skyblue")
         ax.set_title(f"Histogram for {method}")
         ax.set_xlabel("Instance size")
         ax.set_ylabel("Frequency")
-
+        ax.tick_params(axis="x", rotation=90)
     plt.tight_layout()
     plt.savefig(f"{output_directory}cross_val_histogram.png")

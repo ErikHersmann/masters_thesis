@@ -31,7 +31,10 @@ def write_output_without_overwrite(data):
 
 def generate_machines(N_MACHINES, config_dict):
     machines = []
-    max_growth = config_dict["learning_curves_config"]["maximum_growth"]
+    alpha_min = config_dict["learning_curves_config"]["alpha_min"]
+    alpha_max = config_dict["learning_curves_config"]["alpha_max"]
+    beta_min = config_dict["learning_curves_config"]["beta_min"]
+    beta_max = config_dict["learning_curves_config"]["beta_max"]
     for idx in range(N_MACHINES):
         machines.append(
             {
@@ -44,8 +47,8 @@ def generate_machines(N_MACHINES, config_dict):
                     )
                     for _ in range(len(config_dict["skills"]))
                 ],
-                "alpha": 1 + (randint(1, max_growth) / 100),
-                "beta": randint(0, 2),
+                "alpha": 1 + (randint(alpha_min, alpha_max) / 100),
+                "beta": randint(beta_min, beta_max),
                 "l_cap": 0
             }
         )

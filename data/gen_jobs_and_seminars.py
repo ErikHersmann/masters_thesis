@@ -42,7 +42,7 @@ def generate_jobs_seminars(NUM_JOBS, config_dict, NUM_SEMINARS=None):
                     config_dict["skill_config"]["max_job_requirement"],
                 ),
                 "base_duration": random.randint(3, 15),
-                "deadline": random.randint(3, 25),
+                "deadline": random.randint(3, 100),
                 "index": idx,
                 "name": "".join(
                     [chr(random.randint(first_letter, last_letter)) for _ in range(5)]
