@@ -36,7 +36,7 @@ class calculate_lateness:
         """
         order = [[self.jobs_seminars[idx] for idx in machine] for machine in order]
         current_machines = deepcopy(self.machines)
-        lateness = None
+        lateness = []
         if self.debug_mode:
             debug_times = [[] for _ in range(len(order))]
             skill_levels = [[] for _ in range(len(order))]
@@ -47,6 +47,13 @@ class calculate_lateness:
         # print(f"machinecount {len(current_machines)}")
         for machine_idx in range(len(current_machines)):
             current_time = 0
+            if self.debug_mode:
+                skill_levels[machine_idx].append(
+                    {
+                        "time": 0,
+                        "skills": deepcopy(current_machines[machine_idx]["skills"])
+                    }
+                )
             #######
             # JOBS#
             #######
@@ -67,10 +74,9 @@ class calculate_lateness:
                         + current_processing_duration
                         - current_job["deadline"]
                     )
-                    if not lateness or current_lateness_term > lateness:
-                        lateness = current_lateness_term
+                    lateness.append(current_lateness_term)
 
-                #  print(f"t {current_time} machine {machine_idx} lateness {lateness} others {current_time}+{current_processing_duration}-{current_job['deadline']}")
+                    # print(f"t {current_time} machine {machine_idx} lateness {max(lateness)} others {current_time}+{current_processing_duration}-{current_job['deadline']}")
 
                 else:
                     current_processing_duration = current_job["base_duration"]
@@ -83,20 +89,16 @@ class calculate_lateness:
                             "deadline": current_job["deadline"],
                         }
                     )
-                    skill_levels[machine_idx].append(
-                        {
-                            "time": current_time,
-                            "skills": current_machines[machine_idx]["skills"],
-                        }
-                    )
 
                 ###################
                 # UPDATING SKILLS #
                 ###################
-                current_machines[machine_idx]["skills"][
-                    current_job["skill_required"]
-                ] = min(
-                    (
+
+                new_skill_level = min(
+                    current_machines[machine_idx]["skills"][
+                        current_job["skill_required"]
+                    ]
+                    + (
                         current_machines[machine_idx]["alpha"]
                         * (
                             (
@@ -113,6 +115,14 @@ class calculate_lateness:
                     ),
                     self.SKILL_LIMIT_UB,
                 )
+                # print(
+                #     current_machines[machine_idx]["skills"][
+                #         current_job["skill_required"]
+                #     ], new_skill_level
+                # )
+                current_machines[machine_idx]["skills"][
+                    current_job["skill_required"]
+                ] = new_skill_level
                 if no_floats:
                     current_machines[machine_idx]["skills"][
                         current_job["skill_required"]
@@ -121,15 +131,14 @@ class calculate_lateness:
                             current_job["skill_required"]
                         ]
                     )
-
-                if self.debug_mode:
-                    skill_levels[machine_idx].append(
-                        {
-                            "time": current_time + 1,
-                            "skills": current_machines[machine_idx]["skills"],
-                        }
-                    )
                 current_time += current_processing_duration
+            if self.debug_mode:
+                skill_levels[machine_idx].append(
+                    {
+                        "time": -1,
+                        "skills": current_machines[machine_idx]["skills"],
+                    }
+                )
 
         if self.debug_mode:
             # for machine in debug_times:
@@ -137,10 +146,10 @@ class calculate_lateness:
             if self.graph_mode:
                 self.plot_gantt_chart(debug_times)
                 self.plot_skill_level_progression(skill_levels)
-        return lateness
+        return max(lateness)
 
     def plot_gantt_chart(self, schedule):
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(15, 6))
 
         # Loop through each machine's schedule
         for machine_id, jobs in enumerate(schedule):
@@ -171,46 +180,82 @@ class calculate_lateness:
                     fontsize=10,
                 )
 
-        # Set labels and remove grid lines
         ax.set_yticks(range(len(schedule)))
         ax.set_yticklabels([f"Machine {i+1}" for i in range(len(schedule))])
         ax.set_xlabel("Time")
         ax.set_ylabel("Machines")
         ax.set_title("Gantt Chart for Jobs")
-        ax.grid(False)  # Disable grid lines
-        # Set x-ticks to full integers only
+        ax.grid(False)
         max_time = max(job["finish"] for machine in schedule for job in machine)
-        ax.set_xticks(range(0, max_time + 1))  # Full integer steps
+        ax.set_xticks(range(0, max_time + 1, 5))  # Full integer steps
 
         plt.savefig(f"results/plots/{int(time.time())}_gantt.png", bbox_inches="tight")
         plt.close(fig)
 
+    # Define the function to plot skill level progression
     def plot_skill_level_progression(self, skill_levels):
-        num_machines = len(skill_levels)
-        _, axes = plt.subplots(num_machines, 1, figsize=(10, 5 * num_machines))
+
+        # Extract skill names from the configuration dictionary
+        skill_names = self.config_dict["skills"]
+        num_skills = len(skill_names)
+
+        # Prepare data for the plots
+        machine_colors = plt.cm.get_cmap(
+            "tab10", len(skill_levels)
+        )  # Assign distinct colors for each machine
+        initial_levels = []
+        final_levels = []
 
         for machine_idx, machine_data in enumerate(skill_levels):
-            if machine_data == []:
+            if not machine_data:  # Skip machines with no data
                 continue
-            times = [entry["time"] for entry in machine_data]
-            skills = np.array([entry["skills"] for entry in machine_data])
-            ax = axes[machine_idx] if num_machines > 1 else axes
-            for skill_idx in range(skills.shape[1]):
-                skill_data = skills[:, skill_idx]
-                ax.plot(
-                    times,
-                    skill_data,
-                    label=f'{self.config_dict["skills"][skill_idx]}',
-                )
 
-            ax.set_yticks(
-                range(1, self.config_dict["skill_config"]["max_machine_skill"] + 1, 10)
+            initial_skills = machine_data[0]["skills"]
+            final_skills = machine_data[-1]["skills"]
+
+            initial_levels.append(initial_skills)
+            final_levels.append(final_skills)
+
+        # Create subplots
+        fig, axes = plt.subplots(2, 1, figsize=(12, 9))
+
+        # Plot initial skill levels (at time 0)
+        x = np.arange(num_skills)  # Skill indices
+        bar_width = 0.8 / len(initial_levels)  # Bar width
+
+        for idx, levels in enumerate(initial_levels):
+            bars = axes[0].bar(
+                x + idx * bar_width,
+                levels,
+                bar_width,
+                label=f"Machine {idx}",
+                color=machine_colors(idx),
             )
-            ax.set_xlabel("Time")
-            ax.set_ylabel("Skill Level")
-            ax.set_title(f"Machine {machine_idx + 1}")
-            ax.legend()
-            ax.grid(False)
+            axes[0].bar_label(bars, fmt="%d", label_type="center", rotation=90)
+
+        axes[0].set_title("Initial Skill Levels (Time 0)")
+        axes[0].set_ylabel("Skill Level")
+        axes[0].set_xticks(x + (bar_width * len(initial_levels)) / 2)
+        axes[0].set_xticklabels(skill_names, rotation=90)
+        axes[0].legend()
+
+        # Plot final skill levels (at the end)
+        for idx, levels in enumerate(final_levels):
+            bars = axes[1].bar(
+                x + idx * bar_width,
+                levels,
+                bar_width,
+                label=f"Machine {idx}",
+                color=machine_colors(idx),
+            )
+            axes[1].bar_label(bars, fmt="%d", label_type="center", rotation=90)
+
+        axes[1].set_title("Final Skill Levels (End of Time Series)")
+        axes[1].set_ylabel("Skill Level")
+        axes[1].set_xticks(x + (bar_width * len(final_levels)) / 2)
+        axes[1].set_xticklabels(skill_names, rotation=90)
+        axes[1].legend()
 
         plt.tight_layout()
-        plt.savefig(f"results/plots/{int(time.time())}_skills.png")
+        timestamp = int(time.time())
+        plt.savefig(f"results/plots/{timestamp}_skills.png")

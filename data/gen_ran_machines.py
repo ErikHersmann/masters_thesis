@@ -52,7 +52,9 @@ def generate_machines(N_MACHINES, config_dict):
                 "l_cap": 0
             }
         )
-        machines[-1]['l_cap'] = floor((config_dict['skill_config']['max_machine_skill'] / machines[-1]['alpha']) - machines[-1]['beta'])
+        machines[-1]["l_cap"] = floor(
+            machines[-1]["alpha"] * machines[-1]["beta"] + machines[-1]["alpha"]
+        )
     return machines
 
 

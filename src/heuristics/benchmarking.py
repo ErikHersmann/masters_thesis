@@ -17,9 +17,10 @@ def cross_validation(setup_tuple, config_dict):
                 genetic_algorithm_instance = genetic_algorithm(*setup_tuple, config_dict, k, max_epoch, mut_prob)
                 genetic_algorithm_instance.run()
                 lateness = genetic_algorithm_instance._best[0]
+                schedule = genetic_algorithm_instance._best[1][0]
                 parameter_string = f"{k}|{max_epoch}|{mut_prob}"
                 if lateness < results['genetic_algorithm'][1]:
-                    results["genetic_algorithm"] = [[parameter_string], lateness]
+                    results["genetic_algorithm"] = [[parameter_string], lateness, schedule]
                 elif lateness == results["genetic_algorithm"][1]:
                     results["genetic_algorithm"][0].append(parameter_string)
                 print(f"GA {parameter_string}\t{lateness}")
@@ -30,9 +31,10 @@ def cross_validation(setup_tuple, config_dict):
                 simulated_annealing_instance = simulated_annealing(*setup_tuple, config_dict, T, max_epoch, favor_short_solutions_factor)
                 simulated_annealing_instance.run()
                 lateness = simulated_annealing_instance._best[0]
+                schedule = simulated_annealing_instance._best[1][0]
                 parameter_string = f"{T}|{max_epoch}|{favor_short_solutions_factor}"
                 if lateness < results['simulated_annealing'][1]:
-                    results["simulated_annealing"] = [[parameter_string], lateness]
+                    results["simulated_annealing"] = [[parameter_string], lateness, schedule]
                 elif lateness == results["simulated_annealing"][1]:
                     results["simulated_annealing"][0].append(parameter_string)
                 print(f"SA {parameter_string}\t{lateness}")
