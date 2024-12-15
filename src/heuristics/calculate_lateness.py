@@ -151,12 +151,10 @@ class calculate_lateness:
     def plot_gantt_chart(self, schedule):
         fig, ax = plt.subplots(figsize=(15, 6))
 
-        # Loop through each machine's schedule
         for machine_id, jobs in enumerate(schedule):
-            # Use alternating colors for jobs on the same machine
             machine_colors = itertools.cycle(
                 ["tab:blue", "tab:cyan"]
-            )  # Reset colors for each machine
+            )  
             for job in jobs:
                 start = job["start"]
                 end = job["finish"]
@@ -164,12 +162,10 @@ class calculate_lateness:
 
                 color = "orange" if job_id >= self.N_JOBS else next(machine_colors)
 
-                # Add a bar for the job with the selected color
                 ax.broken_barh(
                     [(start, end - start)], (machine_id - 0.4, 0.8), facecolors=color
                 )
 
-                # Add job ID as label
                 ax.text(
                     (start + end) / 2,
                     machine_id,
@@ -192,22 +188,17 @@ class calculate_lateness:
         plt.savefig(f"results/plots/{int(time.time())}_gantt.png", bbox_inches="tight")
         plt.close(fig)
 
-    # Define the function to plot skill level progression
     def plot_skill_level_progression(self, skill_levels):
-
-        # Extract skill names from the configuration dictionary
         skill_names = self.config_dict["skills"]
         num_skills = len(skill_names)
-
-        # Prepare data for the plots
         machine_colors = plt.cm.get_cmap(
             "tab10", len(skill_levels)
-        )  # Assign distinct colors for each machine
+        )  
         initial_levels = []
         final_levels = []
 
-        for machine_idx, machine_data in enumerate(skill_levels):
-            if not machine_data:  # Skip machines with no data
+        for _, machine_data in enumerate(skill_levels):
+            if not machine_data:
                 continue
 
             initial_skills = machine_data[0]["skills"]
@@ -216,12 +207,9 @@ class calculate_lateness:
             initial_levels.append(initial_skills)
             final_levels.append(final_skills)
 
-        # Create subplots
-        fig, axes = plt.subplots(2, 1, figsize=(12, 9))
-
-        # Plot initial skill levels (at time 0)
-        x = np.arange(num_skills)  # Skill indices
-        bar_width = 0.8 / len(initial_levels)  # Bar width
+        _, axes = plt.subplots(2, 1, figsize=(12, 9))
+        x = np.arange(num_skills) 
+        bar_width = 0.8 / len(initial_levels)
 
         for idx, levels in enumerate(initial_levels):
             bars = axes[0].bar(
@@ -233,13 +221,12 @@ class calculate_lateness:
             )
             axes[0].bar_label(bars, fmt="%d", label_type="center", rotation=90)
 
-        axes[0].set_title("Initial Skill Levels (Time 0)")
+        axes[0].set_title("Initial Skill Levels (Before the first job)")
         axes[0].set_ylabel("Skill Level")
         axes[0].set_xticks(x + (bar_width * len(initial_levels)) / 2)
         axes[0].set_xticklabels(skill_names, rotation=90)
         axes[0].legend()
 
-        # Plot final skill levels (at the end)
         for idx, levels in enumerate(final_levels):
             bars = axes[1].bar(
                 x + idx * bar_width,
@@ -250,7 +237,7 @@ class calculate_lateness:
             )
             axes[1].bar_label(bars, fmt="%d", label_type="center", rotation=90)
 
-        axes[1].set_title("Final Skill Levels (End of Time Series)")
+        axes[1].set_title("Final Skill Levels (After the last job)")
         axes[1].set_ylabel("Skill Level")
         axes[1].set_xticks(x + (bar_width * len(final_levels)) / 2)
         axes[1].set_xticklabels(skill_names, rotation=90)

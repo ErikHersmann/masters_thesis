@@ -129,7 +129,7 @@ if __name__ == "__main__":
         values = list(counts.values())
         ax.bar(labels, values, color="skyblue")
         ax.set_title(f"Histogram for {method}")
-        ax.set_xlabel("Instance size")
+        ax.set_xlabel("Parameters")
         ax.set_ylabel("Frequency")
         ax.tick_params(axis="x", rotation=90)
     plt.tight_layout()
