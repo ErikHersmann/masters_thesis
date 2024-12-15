@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from statistics import mean
 import json, sys, glob
 from collections import Counter
+from pyperclip import copy as copy_to_clipboard
 
 
 def calculate_means(data):
@@ -30,6 +31,12 @@ if __name__ == "__main__":
     output_directory = "results/plots/"
     instance_sizes = {}
     cross_validation_histogram = {"genetic_algorithm": [], "simulated_annealing": []}
+    lateness_averages = {}
+    mapping_algo_names = {
+        "genetic_algorithm": 0,
+        "simulated_annealing": 1,
+        "hybrid_algorithm": 2,
+    }
 
     for filename in glob.glob("results/benchmark/*_benchmark.json"):
         # For averaging purposes
@@ -44,23 +51,48 @@ if __name__ == "__main__":
         )
         if instance_size not in instance_sizes:
             instance_sizes[instance_size] = {}
+            lateness_averages[instance_size] = [[] for _ in range(5)]
 
         for algorithm_name in results["solutions"].keys():
-            if algorithm_name == "cross_validation_results": continue
+            if algorithm_name == "cross_validation_results":
+                cv_ga_lateness = results["solutions"][algorithm_name][
+                    "genetic_algorithm"
+                ][1]
+                cv_sa_lateness = results["solutions"][algorithm_name][
+                    "simulated_annealing"
+                ][1]
+                lateness_averages[instance_size][3].append(cv_ga_lateness)
+                lateness_averages[instance_size][4].append(cv_sa_lateness)
+                continue
             runtime = results["solutions"][algorithm_name]["runtime_seconds"]
-            if algorithm_name in results['solutions']['cross_validation_results']:
-                cross_validation = results['solutions']["cross_validation_results"][algorithm_name][0]
+            if algorithm_name in results["solutions"]["cross_validation_results"]:
+                cross_validation = results["solutions"]["cross_validation_results"][
+                    algorithm_name
+                ][0]
                 cross_validation_histogram[algorithm_name].extend(cross_validation)
             if "lateness" in results["solutions"][algorithm_name].keys():
                 lateness = results["solutions"][algorithm_name]["lateness"]
             else:
                 lateness = results["solutions"][algorithm_name]["lateness_recalculated"]
+
+            if algorithm_name not in ["full_enumeration", "gurobi"]:
+                lateness_averages[instance_size][
+                    mapping_algo_names[algorithm_name]
+                ].append(lateness)
             if algorithm_name not in instance_sizes[instance_size]:
                 instance_sizes[instance_size][algorithm_name] = [(runtime, lateness)]
             else:
                 instance_sizes[instance_size][algorithm_name].append(
                     (runtime, lateness)
                 )
+    
+    output_string = []
+    for instance_size, item in lateness_averages.items():
+        cur_string = f"j{instance_size[0]}s{instance_size[1]}m{instance_size[2]} & - & - & {round(mean(item[0]), 1)} & {round(mean(item[1]), 1)} & {round(mean(item[2]), 1)} & {round(mean(item[3]), 1)} & {round(mean(item[4]), 1)} \\\\"
+        print(cur_string)
+        output_string.append(cur_string)
+    output_string[-1] = output_string[-1][:-2]
+    copy_to_clipboard("\n".join(output_string))
 
     instance_sizes = calculate_means(instance_sizes)
     # Runtime multi line chart

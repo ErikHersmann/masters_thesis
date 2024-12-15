@@ -1,6 +1,7 @@
 import json, sys, os, time
 from simulated_annealing import simulated_annealing
 from genetic_algorithm import genetic_algorithm
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from data.gen_jobs_and_seminars import generate_jobs_seminars
@@ -14,13 +15,19 @@ def cross_validation(setup_tuple, config_dict):
     for k in [6, 10, 15]:
         for max_epoch in [1000, 5000]:
             for mut_prob in [0.01, 0.1, 0.2]:
-                genetic_algorithm_instance = genetic_algorithm(*setup_tuple, config_dict, k, max_epoch, mut_prob)
+                genetic_algorithm_instance = genetic_algorithm(
+                    *setup_tuple, config_dict, k, max_epoch, mut_prob
+                )
                 genetic_algorithm_instance.run()
                 lateness = genetic_algorithm_instance._best[0]
                 schedule = genetic_algorithm_instance._best[1][0]
                 parameter_string = f"{k}|{max_epoch}|{mut_prob}"
-                if lateness < results['genetic_algorithm'][1]:
-                    results["genetic_algorithm"] = [[parameter_string], lateness, schedule]
+                if lateness < results["genetic_algorithm"][1]:
+                    results["genetic_algorithm"] = [
+                        [parameter_string],
+                        lateness,
+                        schedule,
+                    ]
                 elif lateness == results["genetic_algorithm"][1]:
                     results["genetic_algorithm"][0].append(parameter_string)
                 print(f"GA {parameter_string}\t{lateness}")
@@ -28,13 +35,23 @@ def cross_validation(setup_tuple, config_dict):
     for T in [10, 50, 100]:
         for max_epoch in [1000, 5000, 10000]:
             for favor_short_solutions_factor in [1, 2, 3, 5]:
-                simulated_annealing_instance = simulated_annealing(*setup_tuple, config_dict, T, max_epoch, favor_short_solutions_factor)
+                simulated_annealing_instance = simulated_annealing(
+                    *setup_tuple,
+                    config_dict,
+                    T,
+                    max_epoch,
+                    favor_short_solutions_factor,
+                )
                 simulated_annealing_instance.run()
                 lateness = simulated_annealing_instance._best[0]
                 schedule = simulated_annealing_instance._best[1][0]
                 parameter_string = f"{T}|{max_epoch}|{favor_short_solutions_factor}"
-                if lateness < results['simulated_annealing'][1]:
-                    results["simulated_annealing"] = [[parameter_string], lateness, schedule]
+                if lateness < results["simulated_annealing"][1]:
+                    results["simulated_annealing"] = [
+                        [parameter_string],
+                        lateness,
+                        schedule,
+                    ]
                 elif lateness == results["simulated_annealing"][1]:
                     results["simulated_annealing"][0].append(parameter_string)
                 print(f"SA {parameter_string}\t{lateness}")
@@ -90,7 +107,7 @@ if __name__ == "__main__":
     print(f"Hybrid algorithm")
     start = time.time_ns()
     algo5 = simulated_annealing(*setup_tuple, config_dict)
-    algo5._current_solution = algo1._best[1][0] 
+    algo5._current_solution = algo1._best[1][0]
     algo5._best = [algo1._best[0], [algo1._best[1][0]]]
     algo5.run()
     finish_5 = (time.time_ns() - start) / 10**9
@@ -116,8 +133,8 @@ if __name__ == "__main__":
             elif lateness == algo3_best[0]:
                 algo3_best[1].append(solution)
         finish_3 = (time.time_ns() - start) / 10**9
-        print([algo3_best[0], algo3_best[1][0]['solution'], len(algo3_best[1])])
-        lateness_calculator.calculate(algo3_best[1][0]['solution'])
+        print([algo3_best[0], algo3_best[1][0]["solution"], len(algo3_best[1])])
+        lateness_calculator.calculate(algo3_best[1][0]["solution"])
         with open(solutions_path, "w") as f:
             json.dump(solutions, f)
         opt_solution_count = len(algo3_best[1])
@@ -140,7 +157,9 @@ if __name__ == "__main__":
             verbose=False,
         )
         solver.compile()
-        gurobi_lateness, gurobi_solution = solver.solve(write_verbose_output=True, terminal_output=True)
+        gurobi_lateness, gurobi_solution = solver.solve(
+            write_verbose_output=True, terminal_output=True
+        )
         print(f"Gurobi\n{[int(gurobi_lateness), gurobi_solution]}")
         lateness_calculator.calculate(gurobi_solution)
         finish_4 = (time.time_ns() - start) / 10**9
@@ -179,11 +198,17 @@ if __name__ == "__main__":
             },
             "gurobi": {
                 "lateness_model": gurobi_lateness,
-                "lateness" : gurobi_calculated_lateness,
+                "lateness": gurobi_calculated_lateness,
                 "solution": gurobi_solution,
                 "runtime_seconds": finish_4,
             },
-            "cross_validation_results" : cross_validation(setup_tuple, config_dict)
+            "cross_validation_results": cross_validation(setup_tuple, config_dict),
+            "hybrid_algorithm": {
+                "lateness": algo5._best[0],
+                "solution": algo5._best[1],
+                "runtime_seconds": finish_5,
+                "max_k": algo5.K_MAX,
+            },
         },
         "machines": machines,
         "jobs_seminars": jobs,
