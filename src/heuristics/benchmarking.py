@@ -71,8 +71,11 @@ if __name__ == "__main__":
     ########
     with open("../../resources/config.json", "r") as f:
         config_dict = json.load(f)
+
+    # Replace this with a results file to redo the process
     machines = generate_machines(N_MACHINES, config_dict)
     jobs = generate_jobs_seminars(N_JOBS, config_dict, N_SEMINARS)
+
     N_JOBS = sum([1 for job in jobs if job["type"] == "job"])
     N_SEMINARS = sum([1 for job in jobs if job["type"] == "seminar"])
     setup_tuple = (machines, jobs)

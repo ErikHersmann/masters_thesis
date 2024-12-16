@@ -85,10 +85,10 @@ if __name__ == "__main__":
                 instance_sizes[instance_size][algorithm_name].append(
                     (runtime, lateness)
                 )
-    
+
     output_string = []
     for instance_size, item in lateness_averages.items():
-        cur_string = f"j{instance_size[0]}s{instance_size[1]}m{instance_size[2]} & - & - & {round(mean(item[0]), 1)} & {round(mean(item[1]), 1)} & {round(mean(item[2]), 1)} & {round(mean(item[3]), 1)} & {round(mean(item[4]), 1)} \\\\"
+        cur_string = f"J{instance_size[0]}S{instance_size[1]}M{instance_size[2]} & - & - & {round(mean(item[0]), 1)} & {round(mean(item[1]), 1)} & {round(mean(item[2]), 1)} & {round(mean(item[3]), 1)} & {round(mean(item[4]), 1)} \\\\"
         print(cur_string)
         output_string.append(cur_string)
     output_string[-1] = output_string[-1][:-2]
