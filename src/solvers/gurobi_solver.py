@@ -399,33 +399,64 @@ class linear_solver:
 
         for machine_idx in range(self.N_MACHINES):
             alpha = self.machines[machine_idx]["alpha"]
-            beta = self.machines[machine_idx]["beta"]
-            l_cap = self.machines[machine_idx]["l_cap"]
+            # beta = self.machines[machine_idx]["beta"]
+            # l_cap = self.machines[machine_idx]["l_cap"]
             for time_idx in range(self.N_TIME - 1):
                 for skill_idx in range(self.N_SKILLS):
-                    new_level_or_zero = sum(
+                    increase_or_zero_rounded = sum(
                         [
-                            beta
-                            * self.start_times_binary[
-                                (machine_idx, job_index, time_idx)
-                            ]
-                            + alpha
-                            * sum(
-                                [
-                                    level
-                                    * self.start_cdot_skill_level_helper_binary[
-                                        (
-                                            machine_idx,
-                                            job_index,
-                                            time_idx,
-                                            level,
-                                            skill_idx,
-                                        )
-                                    ]
-                                    for level in range(self.SKILL_LEVEL_LB, l_cap)
-                                ]
+                            alpha
+                            * (
+                                (
+                                    self.SKILL_LEVEL_UB
+                                    - sum(
+                                        [
+                                            l
+                                            * self.start_cdot_skill_level_helper_binary[
+                                                (
+                                                    machine_idx,
+                                                    job_idx,
+                                                    time_idx,
+                                                    l,
+                                                    skill_idx,
+                                                )
+                                            ]
+                                            for l in self.skill_range()
+                                        ]
+                                    )
+                                )
+                                / self.SKILL_LEVEL_UB
                             )
-                            for job_index in range(self.N_JOBS_AND_SEMINARS)
+                            - self.ALMOST_ONE
+                            * self.start_times_binary[(machine_idx, job_idx, time_idx)]
+                            for job_idx in range(self.N_JOBS_AND_SEMINARS)
+                        ]
+                    )
+                    increase_or_zero_exact = sum(
+                        [
+                            alpha
+                            * (
+                                (
+                                    self.SKILL_LEVEL_UB
+                                    - sum(
+                                        [
+                                            l
+                                            * self.start_cdot_skill_level_helper_binary[
+                                                (
+                                                    machine_idx,
+                                                    job_idx,
+                                                    time_idx,
+                                                    l,
+                                                    skill_idx,
+                                                )
+                                            ]
+                                            for l in self.skill_range()
+                                        ]
+                                    )
+                                )
+                                / self.SKILL_LEVEL_UB
+                            )
+                            for job_idx in range(self.N_JOBS_AND_SEMINARS)
                         ]
                     )
                     old_level = sum(
@@ -452,7 +483,11 @@ class linear_solver:
                         ]
                     )
                     # should be bigger or equal the new level or 0
-                    self.model += left_side >= new_level_or_zero - self.ALMOST_ONE
+                    self.model += (
+                        left_side
+                        >= old_level
+                        + increase_or_zero_rounded
+                    )
                     # should always be bigger or equal the old level
                     self.model += left_side >= old_level
                     # should be smaller or equal to the new level if d = 0
@@ -462,7 +497,8 @@ class linear_solver:
                         * self.skill_increased_helper_binary[
                             (machine_idx, time_idx, skill_idx)
                         ]
-                        + new_level_or_zero
+                        + old_level 
+                        + increase_or_zero_exact
                     )
                     # should be smaller or equal to the old level if d = 1
                     self.model += (
@@ -474,90 +510,75 @@ class linear_solver:
                                 (machine_idx, time_idx, skill_idx)
                             ]
                         )
-                        + old_level
+                        + old_level 
                     )
 
         # Constraints for multiplication helper variable
 
         for machine_idx in range(self.N_MACHINES):
             for job_idx in range(self.N_JOBS_AND_SEMINARS):
-                for time_idx in range(self.N_TIME - 1):
-                    self.model += (
-                        sum(
-                            [
-                                self.start_cdot_skill_level_helper_binary[
-                                    (
-                                        machine_idx,
-                                        job_idx,
-                                        time_idx,
-                                        level_temp,
-                                        self.jobs_seminars[job_idx]["skill_required"],
-                                    )
-                                ]
-                                for level_temp in self.skill_range()
-                            ]
-                        )
-                        <= self.start_times_binary[(machine_idx, job_idx, time_idx)]
-                    )
-                    self.model += (
-                        sum(
-                            [
-                                self.start_cdot_skill_level_helper_binary[
-                                    (
-                                        machine_idx,
-                                        job_idx,
-                                        time_idx,
-                                        level_temp,
-                                        skill_idx_temp,
-                                    )
-                                ]
-                                for level_temp in self.skill_range()
-                                for skill_idx_temp in range(self.N_SKILLS)
-                            ]
-                        )
-                        <= self.start_times_binary[(machine_idx, job_idx, time_idx)]
-                    )
+                for time_idx in range(self.N_TIME):
                     for level in self.skill_range():
-                        self.model += (
-                            self.start_cdot_skill_level_helper_binary[
-                                (
-                                    machine_idx,
-                                    job_idx,
-                                    time_idx,
-                                    level,
-                                    self.jobs_seminars[job_idx]["skill_required"],
-                                )
-                            ]
-                            <= self.skill_level_binary[
-                                (
-                                    machine_idx,
-                                    time_idx,
-                                    level,
-                                    self.jobs_seminars[job_idx]["skill_required"],
-                                )
-                            ]
-                        )
-                        self.model += (
-                            self.start_cdot_skill_level_helper_binary[
-                                (
-                                    machine_idx,
-                                    job_idx,
-                                    time_idx,
-                                    level,
-                                    self.jobs_seminars[job_idx]["skill_required"],
-                                )
-                            ]
-                            >= self.start_times_binary[(machine_idx, job_idx, time_idx)]
-                            + self.skill_level_binary[
-                                (
-                                    machine_idx,
-                                    time_idx,
-                                    level,
-                                    self.jobs_seminars[job_idx]["skill_required"],
-                                )
-                            ]
-                            - 1
-                        )
+                        for w in range(self.N_SKILLS):
+                            # c smaller x
+                            self.model += (
+                                        self.start_cdot_skill_level_helper_binary[
+                                            (
+                                                machine_idx,
+                                                job_idx,
+                                                time_idx,
+                                                level,
+                                                w,
+                                            )
+                                        ]
+                                <= self.start_times_binary[
+                                    (machine_idx, job_idx, time_idx)
+                                ]
+                            )
+                            # c smaller y
+                            self.model += (
+                                self.start_cdot_skill_level_helper_binary[
+                                    (
+                                        machine_idx,
+                                        job_idx,
+                                        time_idx,
+                                        level,
+                                        w,
+                                    )
+                                ]
+                                <= self.skill_level_binary[
+                                    (
+                                        machine_idx,
+                                        time_idx,
+                                        level,
+                                        w,
+                                    )
+                                ]
+                            )
+                            # If both x and y are 1 then c is 1, else c is 0
+                            self.model += (
+                                self.start_cdot_skill_level_helper_binary[
+                                    (
+                                        machine_idx,
+                                        job_idx,
+                                        time_idx,
+                                        level,
+                                        w,
+                                    )
+                                ]
+                                >= self.start_times_binary[
+                                    (machine_idx, job_idx, time_idx)
+                                ]
+                                + self.skill_level_binary[
+                                    (
+                                        machine_idx,
+                                        time_idx,
+                                        level,
+                                        w,
+                                    )
+                                ]
+                                - 1
+                            )
 
     def solve(self, write_verbose_output=False, terminal_output=True):
         """Solves the model with GUROBI"""

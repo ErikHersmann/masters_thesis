@@ -3,6 +3,7 @@ from copy import deepcopy
 import matplotlib.pyplot as plt
 import time, itertools
 import numpy as np
+from functools import cache
 
 
 class calculate_lateness:
@@ -24,6 +25,10 @@ class calculate_lateness:
         self.SKILL_LIMIT_UB = config_dict["skill_config"]["max_machine_skill"]
 
     def calculate(self, order, no_floats=True):
+        return self._calculate(tuple([tuple(x) for x in order]), no_floats=no_floats)
+
+    @cache
+    def _calculate(self, order, no_floats=True):
         """Given a List of Lists of orders of jobs (with details of each job/seminar), and the machines at t=0
         Calculate the lateness of the given solution (order vectors)
 
@@ -51,7 +56,7 @@ class calculate_lateness:
                 skill_levels[machine_idx].append(
                     {
                         "time": 0,
-                        "skills": deepcopy(current_machines[machine_idx]["skills"])
+                        "skills": deepcopy(current_machines[machine_idx]["skills"]),
                     }
                 )
             #######
@@ -102,15 +107,12 @@ class calculate_lateness:
                         current_machines[machine_idx]["alpha"]
                         * (
                             (
-                                (
-                                    self.SKILL_LIMIT_UB
-                                    - current_machines[machine_idx]["skills"][
-                                        current_job["skill_required"]
-                                    ]
-                                )
-                                / self.SKILL_LIMIT_UB
+                                self.SKILL_LIMIT_UB
+                                - current_machines[machine_idx]["skills"][
+                                    current_job["skill_required"]
+                                ]
                             )
-                            + current_machines[machine_idx]["beta"]
+                            / self.SKILL_LIMIT_UB
                         )
                     ),
                     self.SKILL_LIMIT_UB,
@@ -152,9 +154,7 @@ class calculate_lateness:
         fig, ax = plt.subplots(figsize=(15, 6))
 
         for machine_id, jobs in enumerate(schedule):
-            machine_colors = itertools.cycle(
-                ["tab:blue", "tab:cyan"]
-            )  
+            machine_colors = itertools.cycle(["tab:blue", "tab:cyan"])
             for job in jobs:
                 start = job["start"]
                 end = job["finish"]
@@ -191,9 +191,7 @@ class calculate_lateness:
     def plot_skill_level_progression(self, skill_levels):
         skill_names = self.config_dict["skills"]
         num_skills = len(skill_names)
-        machine_colors = plt.cm.get_cmap(
-            "tab10", len(skill_levels)
-        )  
+        machine_colors = plt.cm.get_cmap("tab10", len(skill_levels))
         initial_levels = []
         final_levels = []
 
@@ -208,7 +206,7 @@ class calculate_lateness:
             final_levels.append(final_skills)
 
         _, axes = plt.subplots(2, 1, figsize=(12, 9))
-        x = np.arange(num_skills) 
+        x = np.arange(num_skills)
         bar_width = 0.8 / len(initial_levels)
 
         for idx, levels in enumerate(initial_levels):

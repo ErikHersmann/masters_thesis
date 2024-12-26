@@ -64,7 +64,7 @@ if __name__ == "__main__":
     else:
         # Set N_SEMINARS to None if u want 6
         N_JOBS, N_SEMINARS, N_MACHINES = 4, 2, 2
-    small_instance = all([N_SEMINARS <= 2, N_JOBS <= 5, N_MACHINES <= 3])
+    small_instance = all([N_SEMINARS <= 2, N_JOBS <= 6, N_MACHINES <= 3])
     # small_instance = False
     ########
     # SETUP#

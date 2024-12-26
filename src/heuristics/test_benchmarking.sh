@@ -2,12 +2,19 @@
 
 source ~/python/venv_global/bin/activate
 
-for i in {1..10}
-do
-    python3 benchmarking.py 50 14 15
-    python3 benchmarking.py 10 14 4
-    python3 benchmarking.py 15 14 3
-    python3 benchmarking.py 15 14 5
+j_values=(30 50 100)
+# 20
+s_values=(0 5 14)
+m_values=(2 5 10 15 20)
+
+for j in "${j_values[@]}"; do
+    for s in "${s_values[@]}"; do
+        for m in "${m_values[@]}"; do
+			for i in {1..10}; do
+            	python3 benchmarking.py $j $s $m
+			done
+        done
+    done
 done
 
 deactivate
