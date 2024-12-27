@@ -36,6 +36,8 @@ if __name__ == "__main__":
         "genetic_algorithm": 0,
         "simulated_annealing": 1,
         "hybrid_algorithm": 2,
+        "gurobi": 5,
+        "full_enumeration": 6
     }
 
     for filename in glob.glob("results/benchmark/*_benchmark.json"):
@@ -51,9 +53,10 @@ if __name__ == "__main__":
         )
         if instance_size not in instance_sizes:
             instance_sizes[instance_size] = {}
-            lateness_averages[instance_size] = [[] for _ in range(5)]
+            lateness_averages[instance_size] = [[] for _ in range(7)]
 
         for algorithm_name in results["solutions"].keys():
+            # input(results['solutions'].keys())
             if algorithm_name == "cross_validation_results":
                 cv_ga_lateness = results["solutions"][algorithm_name][
                     "genetic_algorithm"
@@ -79,16 +82,25 @@ if __name__ == "__main__":
                 lateness_averages[instance_size][
                     mapping_algo_names[algorithm_name]
                 ].append(lateness)
+            elif algorithm_name in ["full_enumeration", "gurobi"] and lateness != None:
+                lateness_averages[instance_size][mapping_algo_names[algorithm_name]].append(lateness)
             if algorithm_name not in instance_sizes[instance_size]:
                 instance_sizes[instance_size][algorithm_name] = [(runtime, lateness)]
             else:
                 instance_sizes[instance_size][algorithm_name].append(
                     (runtime, lateness)
                 )
-
     output_string = []
     for instance_size, item in lateness_averages.items():
-        cur_string = f"J{instance_size[0]}S{instance_size[1]}M{instance_size[2]} & - & - & {round(mean(item[0]), 1)} & {round(mean(item[1]), 1)} & {round(mean(item[2]), 1)} & {round(mean(item[3]), 1)} & {round(mean(item[4]), 1)} \\\\"
+        if len(item[5]) > 0:
+            gurobi_string = round(mean(item[5]), 1)
+        else: 
+            gurobi_string = "-"
+        if len(item[6]) > 0:
+            full_enum_string = round(mean(item[6]), 1)
+        else:
+            full_enum_string = "-"
+        cur_string = f"J{instance_size[0]}S{instance_size[1]}M{instance_size[2]} & {gurobi_string} & {full_enum_string} & {round(mean(item[0]), 1)} & {round(mean(item[1]), 1)} & {round(mean(item[2]), 1)} & {round(mean(item[3]), 1)} & {round(mean(item[4]), 1)} \\\\"
         print(cur_string)
         output_string.append(cur_string)
     output_string[-1] = output_string[-1][:-2]

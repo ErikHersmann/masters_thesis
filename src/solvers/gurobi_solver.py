@@ -399,8 +399,6 @@ class linear_solver:
 
         for machine_idx in range(self.N_MACHINES):
             alpha = self.machines[machine_idx]["alpha"]
-            # beta = self.machines[machine_idx]["beta"]
-            # l_cap = self.machines[machine_idx]["l_cap"]
             for time_idx in range(self.N_TIME - 1):
                 for skill_idx in range(self.N_SKILLS):
                     increase_or_zero_rounded = sum(
@@ -409,6 +407,9 @@ class linear_solver:
                             * (
                                 (
                                     self.SKILL_LEVEL_UB
+                                    * self.start_times_binary[
+                                        (machine_idx, job_idx, time_idx)
+                                    ]
                                     - sum(
                                         [
                                             l
@@ -438,6 +439,9 @@ class linear_solver:
                             * (
                                 (
                                     self.SKILL_LEVEL_UB
+                                    * self.start_times_binary[
+                                        (machine_idx, job_idx, time_idx)
+                                    ]
                                     - sum(
                                         [
                                             l
@@ -483,13 +487,9 @@ class linear_solver:
                         ]
                     )
                     # should be bigger or equal the new level or 0
-                    self.model += (
-                        left_side
-                        >= old_level
-                        + increase_or_zero_rounded
-                    )
+                    self.model += left_side >= old_level + increase_or_zero_rounded
                     # should always be bigger or equal the old level
-                    self.model += left_side >= old_level
+                    # self.model += left_side >= old_level
                     # should be smaller or equal to the new level if d = 0
                     self.model += (
                         left_side
@@ -497,7 +497,7 @@ class linear_solver:
                         * self.skill_increased_helper_binary[
                             (machine_idx, time_idx, skill_idx)
                         ]
-                        + old_level 
+                        + old_level
                         + increase_or_zero_exact
                     )
                     # should be smaller or equal to the old level if d = 1
@@ -510,27 +510,27 @@ class linear_solver:
                                 (machine_idx, time_idx, skill_idx)
                             ]
                         )
-                        + old_level 
+                        + old_level
                     )
 
         # Constraints for multiplication helper variable
 
         for machine_idx in range(self.N_MACHINES):
             for job_idx in range(self.N_JOBS_AND_SEMINARS):
-                for time_idx in range(self.N_TIME):
+                for time_idx in range(self.N_TIME - 1):
                     for level in self.skill_range():
                         for w in range(self.N_SKILLS):
                             # c smaller x
                             self.model += (
-                                        self.start_cdot_skill_level_helper_binary[
-                                            (
-                                                machine_idx,
-                                                job_idx,
-                                                time_idx,
-                                                level,
-                                                w,
-                                            )
-                                        ]
+                                self.start_cdot_skill_level_helper_binary[
+                                    (
+                                        machine_idx,
+                                        job_idx,
+                                        time_idx,
+                                        level,
+                                        w,
+                                    )
+                                ]
                                 <= self.start_times_binary[
                                     (machine_idx, job_idx, time_idx)
                                 ]
@@ -590,7 +590,7 @@ class linear_solver:
             GUROBI(
                 mip=True,
                 logPath=self.RESULTS_DIR + "gurobi_log.txt",
-                timeLimit=60000,
+                timeLimit=300,
                 displayInterval=5,
                 msg=terminal_output,
             )
