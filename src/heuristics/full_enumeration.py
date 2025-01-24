@@ -112,3 +112,7 @@ if __name__ == "__main__":
             f,
         )
     print(f"Solution count {len(result)} ({fname})")
+    
+    ######################################################################################################
+    # Just append the solutions directly to a file while constructing as to not keep the object in memory#
+    ######################################################################################################

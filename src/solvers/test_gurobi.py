@@ -14,6 +14,9 @@ if __name__ == "__main__":
         "r",
     ) as f:
         benchmarking_reference = json.load(f)
+    
+    full_enum_lateness = benchmarking_reference['solutions']['full_enumeration']['lateness']
+    print(f"Full enumeration lateness {full_enum_lateness}")
 
     # solver = linear_solver(machines, jobs_seminars, config_dict, True)
     solver = linear_solver(benchmarking_reference['machines'], benchmarking_reference['jobs_seminars'], config_dict, True)

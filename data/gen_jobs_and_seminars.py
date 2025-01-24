@@ -29,10 +29,14 @@ def write_output_without_overwrite(data, index_tuple):
             print(f"wrote to {cfname}")
             break
 
-def generate_jobs_seminars(NUM_JOBS, config_dict, NUM_SEMINARS=None):
+def generate_jobs_seminars(NUM_JOBS, config_dict, NUM_SEMINARS):
     output = []
     first_letter = ord("a")
     last_letter = ord("z")
+    min_base = config_dict["job_config"]["min_base_duration"]
+    max_base = config_dict["job_config"]["max_base_duration"]
+    min_deadline = config_dict["job_config"]["min_deadline"]
+    max_deadline = config_dict["job_config"]["max_deadline"]
     for idx in range(NUM_JOBS):
         output.append(
             {
@@ -41,8 +45,8 @@ def generate_jobs_seminars(NUM_JOBS, config_dict, NUM_SEMINARS=None):
                     config_dict["skill_config"]["min_job_requirement"],
                     config_dict["skill_config"]["max_job_requirement"],
                 ),
-                "base_duration": random.randint(3, 15),
-                "deadline": random.randint(3, 100),
+                "base_duration": random.randint(min_base, max_base),
+                "deadline": random.randint(min_deadline, max_deadline),
                 "index": idx,
                 "name": "".join(
                     [chr(random.randint(first_letter, last_letter)) for _ in range(5)]
@@ -50,11 +54,7 @@ def generate_jobs_seminars(NUM_JOBS, config_dict, NUM_SEMINARS=None):
                 "type": "job",
             }
         )
-    if NUM_SEMINARS:
-        skill_count = NUM_SEMINARS
-    else:
-        skill_count = len(config_dict['skills'])
-    for skill_idx in range(skill_count):
+    for skill_idx in range(NUM_SEMINARS):
         output.append(
             {
                 "skill_required": skill_idx,

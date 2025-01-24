@@ -2,10 +2,9 @@
 
 source ~/python/venv_global/bin/activate
 
-j_values=(30 50 100)
-# 20
-s_values=(0 5 14)
-m_values=(2 5 10 15 20)
+j_values=(1 2 3 4)
+s_values=(1 2)
+m_values=(2)
 
 for j in "${j_values[@]}"; do
     for s in "${s_values[@]}"; do

@@ -92,32 +92,33 @@ class simulated_annealing(heuristic_template):
         ###########
         # SWAPPING#
         ###########
-        machine_idx_1 = choice(list(range(self.N_MACHINES)))
-        indices_free_to_choose = list(range(self.N_MACHINES))
-        indices_free_to_choose.remove(machine_idx_1)
-        machine_idx_2 = choice(indices_free_to_choose)
-        for item_1 in [
-            x for x in self._current_solution[machine_idx_1] if x < self.N_JOBS
-        ]:
-            for item_2 in [
-                x for x in self._current_solution[machine_idx_2] if x < self.N_JOBS
+        if self.N_MACHINES > 1:
+            machine_idx_1 = choice(list(range(self.N_MACHINES)))
+            indices_free_to_choose = list(range(self.N_MACHINES))
+            indices_free_to_choose.remove(machine_idx_1)
+            machine_idx_2 = choice(indices_free_to_choose)
+            for item_1 in [
+                x for x in self._current_solution[machine_idx_1] if x < self.N_JOBS
             ]:
-                neighbor = deepcopy(self._current_solution)
-                if (
-                    item_1 in self._current_solution[machine_idx_2]
-                    or item_2 in self._current_solution[machine_idx_1]
-                ):
-                    continue
-                ###########
-                # SWAPPING#
-                ###########
-                neighbor[machine_idx_1].remove(item_1)
-                neighbor[machine_idx_1].append(item_2)
-                neighbor[machine_idx_2].remove(item_2)
-                neighbor[machine_idx_2].append(item_1)
-                # if neighbor not in self._visited:
-                possible_neighbors.append(neighbor)
-                #     self._visited.append(neighbor)
+                for item_2 in [
+                    x for x in self._current_solution[machine_idx_2] if x < self.N_JOBS
+                ]:
+                    neighbor = deepcopy(self._current_solution)
+                    if (
+                        item_1 in self._current_solution[machine_idx_2]
+                        or item_2 in self._current_solution[machine_idx_1]
+                    ):
+                        continue
+                    ###########
+                    # SWAPPING#
+                    ###########
+                    neighbor[machine_idx_1].remove(item_1)
+                    neighbor[machine_idx_1].append(item_2)
+                    neighbor[machine_idx_2].remove(item_2)
+                    neighbor[machine_idx_2].append(item_1)
+                    # if neighbor not in self._visited:
+                    possible_neighbors.append(neighbor)
+                    #     self._visited.append(neighbor)
 
         ret_val = possible_neighbors
         while len(ret_val) == 0:
