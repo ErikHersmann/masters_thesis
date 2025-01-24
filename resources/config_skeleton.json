@@ -1,0 +1,28 @@
+{
+  "access_token": "",
+  "workspace": "",
+  "skills": [
+    "Skill_1",
+    "Skill_2",
+    "Skill_3",
+    "Skill_4"
+  ],
+  "skill_config": {
+    "max_machine_skill": 100,
+    "min_machine_skill": 1,
+    "max_job_requirement": 100,
+    "min_job_requirement": 1
+  },
+  "job_config" : {
+    "min_base_duration": 5,
+    "max_base_duration": 10,
+    "min_deadline": 10,
+    "max_deadline": 50
+  },
+  "learning_curves_config": {
+    "alpha_min": 1.5,
+    "alpha_max": 15,
+    "beta_min": 1,
+    "beta_max": 3
+  }
+}
