@@ -3,6 +3,7 @@ from statistics import mean
 import json, sys, glob
 from collections import Counter
 from pyperclip import copy as copy_to_clipboard
+import numpy as np
 
 
 def calculate_means(data):
@@ -28,7 +29,7 @@ if __name__ == "__main__":
     else:
         filename = "results/benchmark/1733439627_benchmark.json"
 
-    output_directory = "results/plots/"
+    output_directory = "results/"
     instance_sizes = {}
     cross_validation_histogram = {"genetic_algorithm": [], "simulated_annealing": []}
     lateness_averages = {}
@@ -90,6 +91,11 @@ if __name__ == "__main__":
                 instance_sizes[instance_size][algorithm_name].append(
                     (runtime, lateness)
                 )
+    for instance_size in instance_sizes.keys():
+        print(instance_size)
+        for x in instance_sizes[instance_size]:
+            print(x,f"{(20 - len(x)) * ' '}", [ y[1] for y in instance_sizes[instance_size][x]])
+
     output_string = []
     for instance_size, item in lateness_averages.items():
         if len(item[5]) > 0:
@@ -98,16 +104,25 @@ if __name__ == "__main__":
             gurobi_string = "-"
         if len(item[6]) > 0:
             full_enum_string = round(mean(item[6]), 1)
+            latex_string = "\\textsuperscript{*} "
         else:
             full_enum_string = "-"
-        cur_string = f"J{instance_size[0]}S{instance_size[1]}M{instance_size[2]} & {gurobi_string} & {full_enum_string} & {round(mean(item[0]), 1)} & {round(mean(item[1]), 1)} & {round(mean(item[2]), 1)} & {round(mean(item[3]), 1)} & {round(mean(item[4]), 1)} \\\\"
-        print(cur_string)
-        output_string.append(cur_string)
+            latex_string = ""
+        cur_string = f"J{instance_size[0]}S{instance_size[1]}M{instance_size[2]}{latex_string} & {gurobi_string} & {full_enum_string} & {round(mean(item[0]), 1)} & {round(mean(item[1]), 1)} & {round(mean(item[2]), 1)} & {round(mean(item[3]), 1)} & {round(mean(item[4]), 1)} \\\\"
+        # print(cur_string)
+        if full_enum_string != "-":
+            output_string.insert(0, cur_string)
+        else:
+            output_string.append(cur_string)
     output_string[-1] = output_string[-1][:-2]
     copy_to_clipboard("\n".join(output_string))
+    print("\n".join(output_string))
 
     instance_sizes = calculate_means(instance_sizes)
-    # Runtime multi line chart
+
+    ################
+    # RUNTIME CHART#
+    ################
     plt.figure(figsize=(10, 6))
     for algorithm_name in list(instance_sizes[list(instance_sizes.keys())[0]].keys()):
         plt.plot(
@@ -120,6 +135,7 @@ if __name__ == "__main__":
             marker="o",
             label=algorithm_name,
         )
+    plt.yscale("log")
     plt.xlabel("Instance Size (Job, Seminar, Machine)")
     plt.ylabel("Runtime (seconds)")
     plt.title("Average Algorithm Runtimes by Instance Size")
@@ -134,7 +150,9 @@ if __name__ == "__main__":
 
     plt.savefig(f"{output_directory}algorithm_runtimes.png")
 
-    # optimality gap chart
+    #################
+    # LATENESS CHART#
+    #################
     plt.clf()
     plt.figure(figsize=(10, 6))
     for algorithm_name in list(instance_sizes[list(instance_sizes.keys())[0]].keys()):
@@ -162,8 +180,58 @@ if __name__ == "__main__":
     plt.savefig(f"{output_directory}algorithm_lateness.png")
     plt.clf()
 
-    # ALso write something that only uses the instances that have been solved by the exact solvers (or atleast one of the 2) and then plot the absolute optimality gap instance wise, not averaged
+    ##########################################
+    # EXACT SOLVER DIFFERENCE METAHEURISTICS #
+    ##########################################
+    differences = {}
+    algorithm_names = []
+    for key, value in instance_sizes.items():
+        if "full_enumeration" not in value.keys():
+            continue
+        full_enum_lateness = value['full_enumeration'][1]
+        if full_enum_lateness == None: continue
+        differences[key] = {}
+        for algo, tup in value.items():
+            if tup == (None, None): continue
+            differences[key][algo] = tup[1] - full_enum_lateness
+            if algo not in algorithm_names: algorithm_names.append(algo)
 
+    plt.clf()
+    plt.figure(figsize=(12, 8))
+    x = np.arange(len(differences)) * 1.2  
+    width = 0.2 
+    for i, algorithm_name in enumerate(algorithm_names):
+        y_values = [
+            (
+                differences[instance][algorithm_name] + 0.05
+                if algorithm_name in differences[instance]
+                else 0
+            )
+            for instance in differences.keys()
+        ]
+        plt.bar(
+            x + i * width,
+            y_values,
+            width,
+            label=algorithm_name,
+        )
+    plt.xlabel("Instance Size (Job, Seminar, Machine)")
+    plt.ylabel("Lateness Difference To Exact Methods")
+    plt.title("Average Algorithm Lateness Difference To Exact Methods by Instance Size")
+    plt.xticks(
+    ticks=x + (len(algorithm_names) - 1) * width / 2,
+    labels=list(differences.keys()),
+    rotation=45
+    )
+    plt.legend(title="Algorithm")
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
+    plt.tight_layout()
+    plt.savefig(f"{output_directory}algorithm_lateness_differences.png")
+    plt.clf()
+
+    ###############################
+    # HYPERPARAMETER SEARCH CHART #
+    ###############################
     fig, axes = plt.subplots(2, 1, figsize=(12, 9))
 
     for ax, (method, data) in zip(axes, cross_validation_histogram.items()):

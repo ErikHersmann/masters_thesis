@@ -47,7 +47,7 @@ def generate_machines(N_MACHINES, config_dict):
                     )
                     for _ in range(len(config_dict["skills"]))
                 ],
-                "alpha": 1 + (randint(alpha_min, alpha_max) / 100),
+                "alpha": randint(alpha_min, alpha_max),
                 "beta": randint(beta_min, beta_max),
                 "l_cap": 0
             }

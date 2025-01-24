@@ -61,22 +61,21 @@ def cross_validation(setup_tuple, config_dict):
 if __name__ == "__main__":
     if len(sys.argv) == 4:
         N_JOBS, N_SEMINARS, N_MACHINES = map(int, sys.argv[1:])
+        small_instance = all([N_SEMINARS <= 2, N_JOBS <= 6, N_MACHINES <= 3])
     else:
-        # Set N_SEMINARS to None if u want 14
-        N_JOBS, N_SEMINARS, N_MACHINES = 4, 2, 2
-    small_instance = all([N_SEMINARS <= 2, N_JOBS <= 6, N_MACHINES <= 3])
-    # small_instance = False
+        exit(-1)
+
     ########
     # SETUP#
     ########
     with open("../../resources/config.json", "r") as f:
         config_dict = json.load(f)
 
-    # Replace this with a results file to redo the process
     machines = generate_machines(N_MACHINES, config_dict)
     jobs = generate_jobs_seminars(N_JOBS, config_dict, N_SEMINARS)
 
     N_JOBS = sum([1 for job in jobs if job["type"] == "job"])
+    # The default for this should be len(config_dict['skills])
     N_SEMINARS = sum([1 for job in jobs if job["type"] == "seminar"])
     setup_tuple = (machines, jobs)
     lateness_calculator = calculate_lateness(machines, jobs, config_dict, True, True)
@@ -145,7 +144,7 @@ if __name__ == "__main__":
         print(f"No enumeration file found")
         algo3_best = [None, None]
         finish_3 = None
-        solutions = []
+        solutions = [[]]
         opt_solution_count = None
 
     #########
@@ -163,6 +162,7 @@ if __name__ == "__main__":
         gurobi_lateness, gurobi_solution = solver.solve(
             write_verbose_output=True, terminal_output=True
         )
+        if not gurobi_lateness or not gurobi_solution: exit(-2)
         print(f"Gurobi\n{[int(gurobi_lateness), gurobi_solution]}")
         lateness_calculator.calculate(gurobi_solution)
         finish_4 = (time.time_ns() - start) / 10**9
@@ -178,25 +178,33 @@ if __name__ == "__main__":
     # WRITE RESULTS#
     ################
     epoch_time = int(time.time())
+    if algo3_best != [None, None]:
+        feos = algo3_best[1][0]
+        fesc = len(algo3_best[1])
+    else:
+        feos = None
+        fesc = None
     results = {
         "solutions": {
             "genetic_algorithm": {
                 "lateness": algo1._best[0],
-                "solution": algo1._best[1],
+                "solution": algo1._best[1][0],
+                "solution_count": len(algo1._best[1]),
                 "runtime_seconds": finish_1,
                 "max_epoch": algo1.MAX_EPOCH,
             },
             "simulated_annealing": {
                 "lateness": algo2._best[0],
-                "solution": algo2._best[1],
+                "solution": algo2._best[1][0],
+                "solution_count": len(algo2._best[1]),
                 "runtime_seconds": finish_2,
                 "max_k": algo2.K_MAX,
             },
             "full_enumeration": {
                 "lateness": algo3_best[0],
-                "optimal_solutions": algo3_best[1],
+                "optimal_solutions": feos,
+                "solution_count": fesc,
                 "runtime_seconds": finish_3,
-                "solution_count": len(solutions),
                 "optimal_solution_count": opt_solution_count,
             },
             "gurobi": {
@@ -208,7 +216,8 @@ if __name__ == "__main__":
             "cross_validation_results": cross_validation(setup_tuple, config_dict),
             "hybrid_algorithm": {
                 "lateness": algo5._best[0],
-                "solution": algo5._best[1],
+                "solution": algo5._best[1][0],
+                "solution_count": len(algo5._best[1]),
                 "runtime_seconds": finish_5,
                 "max_k": algo5.K_MAX,
             },

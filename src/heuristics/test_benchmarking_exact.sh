@@ -2,8 +2,8 @@
 
 source ~/python/venv_global/bin/activate
 
-j_values=(1 2 3 4)
-s_values=(1 2)
+j_values=(3 4)
+s_values=(2)
 m_values=(2)
 
 for j in "${j_values[@]}"; do

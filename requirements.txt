@@ -1,6 +1,6 @@
 asana==5.0.10
 matplotlib==3.10.0
-numpy==2.2.0
+numpy==2.2.2
 pandas==2.2.3
 PuLP==2.9.0
 pyperclip==1.9.0
